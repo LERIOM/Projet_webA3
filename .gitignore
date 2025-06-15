@@ -31,9 +31,6 @@ vendor/
 .env
 .env.*
 
-# Dumps SQL (optionnel : à ignorer si tu ne veux pas versionner tes exports de BDD)
-*.sql
-
 # OS files
 .DS_Store
 Thumbs.db
