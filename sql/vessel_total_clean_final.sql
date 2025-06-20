@@ -23,7 +23,7 @@ CREATE TABLE IF NOT EXISTS vessel_total_clean_final (
 ALTER TABLE vessel_total_clean_final ADD PRIMARY KEY (id);
 
 -- PostgreSQL bulk import
-COPY vessel_total_clean_final FROM '../csv/vessel-total-clean-final.csv' DELIMITER ',' CSV HEADER;
+COPY vessel_total_clean_final FROM '/root/Projet_webA3/source/csv/vessel-total-clean-final.csv' DELIMITER ',' CSV HEADER NULL 'NA';
 
 -- LOAD DATA INFILE '/path/to/vessel-total-clean-final.csv'
 -- INTO TABLE vessel_total_clean_final
