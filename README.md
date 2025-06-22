@@ -17,15 +17,16 @@ git config --global user.email "votre.email@example.com"
 telecharger extention SQLTools PostgreSQL et configurer
 
 
-faire run cette commande: 
+faire run cette commande: Plus obligatoire
 
-chmod 711 /root
+# rendre chaque dossier traversable + listable
+chmod 755 /var/www
+chmod 755 /var/www/html
+chmod 755 /var/www/html/Projet_webA3
+chmod 755 /var/www/html/Projet_webA3/csv
 
-# rendre les sous-dossiers traversables + listables
-chmod 755 /root/Projet_webA3
-chmod 755 /root/Projet_webA3/source
-chmod 755 /root/Projet_webA3/source/csv     # ou /source/sql si c’est ton chemin
+# rendre le fichier lisible
+chmod 644 /var/www/html/Projet_webA3/source/csv/vessel-total-clean-final.csv
 
-# rendre le CSV lisible
-chmod 644 /root/Projet_webA3/source/csv/vessel-total-clean-final.csv
+
 

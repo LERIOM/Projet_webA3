@@ -1,4 +1,4 @@
-
+DROP TABLE IF EXISTS vessel_total_clean_final;
 CREATE TABLE IF NOT EXISTS vessel_total_clean_final (
     id INTEGER,
     mmsi BIGINT,
