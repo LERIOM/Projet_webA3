@@ -32,3 +32,7 @@ si erreur http:
 
 tail -f /var/log/apache2/error.log
 
+
+
+git config --global user.name "LERIOM"
+git config --global user.email "riom.antoin44@gmail.com"
