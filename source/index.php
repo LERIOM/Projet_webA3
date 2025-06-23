@@ -8,6 +8,7 @@
  <body>
     <button type="button" onclick="test()">Cliquez ici</button>
  </body>
+ <script src="../js/ajax.js"></script>
  <script src="../js/main.js"></script>
 </html>
 
