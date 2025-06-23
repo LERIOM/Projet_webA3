@@ -141,10 +141,10 @@ function getPredictTrajectory(
     );
 
     // 2) Exécuter
-    $result = shell_exec($cmd);
+    $output = shell_exec($cmd);
 
     // 3) Décoder le JSON
-  
+    $result = json_decode($output, true);
 
     if (!empty($result)) {
       return Response::HTTP200($result);

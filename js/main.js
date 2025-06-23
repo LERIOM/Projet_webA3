@@ -73,11 +73,11 @@ function getCluster(){
 
 function getPredictTrajectory( cog, sog, lat, lon, delta, heading,length, draft){
     ajaxRequest('GET','/php/request.php/predictTrajectory?&cog='+cog+'&sog='+sog+'&lat='+lat+'&lon='+lon+'&delta='+delta+'&heading='+heading+'&length='+length+'&draft='+draft, function(responses){
-        if(!responses.error){
-            console.log(responses);
-        }
-        else{
-            console.log(responses);
+        const prediction = Array.isArray(responses) ? responses[0] : null;
+        if (prediction) {
+            console.log('Latitude :', prediction.lat);
+        } else {
+            console.error('Réponse inattendue :', responses);
         }
     });
 }

@@ -34,7 +34,8 @@ tail -f /var/log/apache2/error.log
 
 run : 
 
-pip install --break-system-packages --no-cache-dir scikit-learn==1.3.2
+pip install --break-system-packages --no-cache-dir scikit-learn==1.7.0
+
 
 
 
