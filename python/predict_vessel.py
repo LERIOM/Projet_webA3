@@ -4,7 +4,7 @@ import numpy as np
 import os
 
 # Charger le modèle entraîné
-model = joblib.load("model_vessel_type_one_line_per_mmsi.pkl")
+model = joblib.load("model_vessel_type_logistic.pkl")
 
 # Définir les arguments de la ligne de commande
 parser = argparse.ArgumentParser(description="Prédire le type de navire")
