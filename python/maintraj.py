@@ -24,22 +24,30 @@ parser.add_argument('--delta_seconds', type=int, required=True)
 
 args = parser.parse_args()
 
-input = np.array([[args.lat, args.lon, args.sog, args.cog, args.heading, args.length, args.draft, args.delta_seconds]])
+features = np.array([
+    args.lat,
+    args.lon,
+    args.sog,
+    args.cog,
+    args.heading,
+    args.length,
+    args.draft,
+    args.delta_seconds
+]).reshape(1, -1)
 
-
-X_new = pd.DataFrame([input])
+X_new = pd.DataFrame(
+    features,
+    columns=[
+        "lat", "lon", "sog", "cog",
+        "heading", "length", "draft", "delta_seconds"
+    ]
+)
 
 predicted_position = model.predict(X_new)
 
 pred_lat, pred_lon = map(float, predicted_position[0])
 
 result = [{
-    "length": args.length,
-    "width": None,            # à renseigner si tu as l'info
-    "draft": args.draft,
-    "cog": args.cog,
-    "sog": args.sog,
-    "heading": args.heading,
     "lat": pred_lat,
     "lon": pred_lon
 }]
