@@ -6,7 +6,7 @@
  <title> index </title>
  </head>
  <body>
-    <button type="button" onclick="test()">Cliquez ici</button>
+    <button type="button" onclick="test()">Cliquez icjiuii</button>
  </body>
  <script src="../js/main.js"></script>
 </html>
