@@ -87,18 +87,64 @@ function getAllBoats($pdo) {
 }
 
 function getredictCluster($pdo, $cog, $sog, $lat, $lon) {
-  $query = $pdo->prepare('SELECT * FROM vessel_total_clean_final WHERE cog = :cog AND sog = :sog AND lat = :lat AND lon = :lon');
-  $query->bindParam(':cog', $cog);
-  $query->bindParam(':sog', $sog);
-  $query->bindParam(':lat', $lat);
-  $query->bindParam(':lon', $lon);
-  $query->execute();
-  $result = $query->fetchAll(PDO::FETCH_ASSOC);
-  
-  if (!empty($result)) {
-    return Response::HTTP200($result);
-  } else {
-    return Response::HTTP404(['message' => 'No cluster found with the given parameters']);
-  }
-} 
+
+    $args = [
+        escapeshellarg($cog),
+        escapeshellarg($sog),
+        escapeshellarg($lat),
+        escapeshellarg($lon)
+    ];
+
+    $cmd = 'python3 /var/www/html/Projet_webA3/python/maintraj.py ' .
+           implode(' ', $args) . ' 2>&1';
+
+    $output = shell_exec($cmd);
+
+    // On suppose que le script renvoie du JSON
+    $data = json_decode($output, true);
+
+    if ($data !== null) {
+        // Succès : on renvoie les données produites par Python
+        return Response::HTTP200($data);
+    }
+
+    // Échec : JSON invalide ou autre erreur
+    return Response::HTTP500([
+        'message' => 'Erreur lors de l\'exécution du script Python ou JSON malformé',
+        'output'  => $output          // utile pour le débogage
+    ]);
+}
+
+function getredictTrajectoire($pdo,$lat,$lon,$sog,$cog,$heading,$length,$draft,$delta_seconds) {
+
+    $args = [
+        escapeshellarg($cog),
+        escapeshellarg($sog),
+        escapeshellarg($lat),
+        escapeshellarg($lon),
+        escapeshellarg($heading),
+        escapeshellarg($length),
+        escapeshellarg($draft),
+        escapeshellarg($delta_seconds)
+    ];
+
+    $cmd = 'python3 /var/www/html/Projet_webA3/python/maintraj.py ' .
+           implode(' ', $args) . ' 2>&1';
+
+    $output = shell_exec($cmd);
+
+    // On suppose que le script renvoie du JSON
+    $data = json_decode($output, true);
+
+    if ($data !== null) {
+        // Succès : on renvoie les données produites par Python
+        return Response::HTTP200($data);
+    }
+
+    // Échec : JSON invalide ou autre erreur
+    return Response::HTTP500([
+        'message' => 'Erreur lors de l\'exécution du script Python ou JSON malformé',
+        'output'  => $output          // utile pour le débogage
+    ]);
+}
 ?> 

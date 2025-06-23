@@ -3,13 +3,13 @@ import joblib
 import numpy as np
 import pandas as pd
 import os
+import json
 
 # Charger le modèle entraîné
 script_dir = os.path.dirname(os.path.abspath(__file__))
 model_path = os.path.join(script_dir, "trajectoire.pkl")
 
 model = joblib.load(model_path)
-print("Modèle chargé.")
 
 # Définir les arguments de la ligne de commande
 parser = argparse.ArgumentParser(description="Prédire le type de navire")
@@ -26,14 +26,23 @@ args = parser.parse_args()
 
 input = np.array([[args.lat, args.lon, args.sog, args.cog, args.heading, args.length, args.draft, args.delta_seconds]])
 
-# Convertir en DataFrame 
+
 X_new = pd.DataFrame([input])
 
-# Prédire la position future
 predicted_position = model.predict(X_new)
 
+pred_lat, pred_lon = map(float, predicted_position[0])
 
-# Afficher le résultat
-print("\n Position future estimée pour delta_seconds =", input["delta_seconds"], "secondes :")
-print("Latitude :", predicted_position[0][0])
-print("Longitude:", predicted_position[0][1])
+result = [{
+    "length": args.length,
+    "width": None,            # à renseigner si tu as l'info
+    "draft": args.draft,
+    "cog": args.cog,
+    "sog": args.sog,
+    "heading": args.heading,
+    "lat": pred_lat,
+    "lon": pred_lon
+}]
+
+# Imprimer le JSON (une seule ligne) — côté PHP, json_decode($output, true) renverra un tableau associatif
+print(json.dumps(result))
