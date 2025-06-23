@@ -37,3 +37,36 @@ function test(){
         }
     });
 }
+
+function getAllBoats(){
+    ajaxRequest('GET','/php/request.php/boatAll', function(responses){
+        if(!responses.error){
+            console.log(responses);
+        }
+        else{
+            console.log(responses);
+        }
+    });
+}
+
+function getBoatMmsi(mmsi){
+    ajaxRequest('GET','/php/request.php/boatMmsi?mmsi='+mmsi, function(responses){
+        if(!responses.error){
+            console.log(responses);
+        }
+        else{
+            console.log(responses);
+        }
+    });
+}
+
+function getCluster(){
+    ajaxRequest('GET','/php/request.php/predictCluster?cog='+cog+'&sog='+sog+'&lat='+lat+'&lon='+lon, function(responses){
+        if(!responses.error){
+            console.log(responses);
+        }
+        else{
+            console.log(responses);
+        }
+    });
+}

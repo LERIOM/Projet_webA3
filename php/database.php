@@ -76,7 +76,7 @@ function getTabMmsi($pdo, $mmsi) {
 }
 
 function getAllBoats($pdo) {
-  $query = $pdo->prepare('SELECT length , width, draft, cog, sog, heading , lat, long FROM vessel_total_clean_final');
+  $query = $pdo->prepare('SELECT length , width, draft, cog, sog, heading , lat, lon FROM vessel_total_clean_final');
   $query->execute();
   $result = $query->fetchAll(PDO::FETCH_ASSOC);
   if (!empty($result)) {
@@ -85,4 +85,20 @@ function getAllBoats($pdo) {
     return Response::HTTP404(['message' => 'No boats found']);
   }
 }
+
+function getredictCluster($pdo, $cog, $sog, $lat, $lon) {
+  $query = $pdo->prepare('SELECT * FROM vessel_total_clean_final WHERE cog = :cog AND sog = :sog AND lat = :lat AND lon = :lon');
+  $query->bindParam(':cog', $cog);
+  $query->bindParam(':sog', $sog);
+  $query->bindParam(':lat', $lat);
+  $query->bindParam(':lon', $lon);
+  $query->execute();
+  $result = $query->fetchAll(PDO::FETCH_ASSOC);
+  
+  if (!empty($result)) {
+    return Response::HTTP200($result);
+  } else {
+    return Response::HTTP404(['message' => 'No cluster found with the given parameters']);
+  }
+} 
 ?> 

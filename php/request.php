@@ -38,6 +38,11 @@ $router->GET('/boatAll', [], function(){
   getAllBoats($pdo);
 });
 
+$router->GET('/predictCluster', ["cog", "sog", "lat", "lon"], function($cog, $sog, $lat, $lon){
+  global $pdo;
+  getredictCluster($pdo, $cog, $sog, $lat, $lon);
+});
+
 $router->run();
 
 ?>
