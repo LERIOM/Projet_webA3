@@ -63,7 +63,7 @@ function postBoat($pdo,$id, $mmsi, $base_date_time, $lat, $lon, $sog, $cog, $hea
 
 
 function getTabMmsi($pdo, $mmsi) {
-  $query = $pdo->prepare('SELECT * FROM vessel_total_clean_final WHERE mmsi = :mmsi');
+  $query = $pdo->prepare('SELECT * FROM vessel_total_clean_final WHERE mmsi = :mmsi LIMIT 1');
   $query->bindParam(':mmsi', $mmsi);
   $query->execute();
   $result = $query->fetchAll(PDO::FETCH_ASSOC);

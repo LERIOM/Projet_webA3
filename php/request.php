@@ -28,6 +28,16 @@ $router->POST('/boat', ["id ","mmsi ","base_date_time ","lat ","lon ","sog ","co
   postBoat($pdo,$id, $mmsi, $base_date_time, $lat, $lon, $sog, $cog, $heading, $vessel_name, $imo, $call_sign, $vessel_type, $status, $length, $width, $draft, $cargo, $transceiver_class);
 });
 
+$router->GET('/boatMmsi',["mmsi"], function($mmsi){
+  global $pdo;
+  getTabMmsi($pdo, $mmsi);
+});
+
+$router->GET('/boatAll', [], function(){
+  global $pdo;
+  getAllBoats($pdo);
+});
+
 $router->run();
 
 ?>
