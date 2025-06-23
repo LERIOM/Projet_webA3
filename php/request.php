@@ -43,6 +43,34 @@ $router->GET('/predictCluster', ["cog", "sog", "lat", "lon"], function($cog, $so
   getredictCluster($pdo, $cog, $sog, $lat, $lon);
 });
 
+$router->GET(
+    '/predictTrajectory',
+    ["cog", "sog", "lat", "lon", "delta", "heading", "length", "draft"],
+    function (
+        $cog,
+        $sog,
+        $lat,
+        $lon,
+        $delta,
+        $heading,
+        $length,
+        $draft
+    ) {
+        global $pdo;
+        getPredictTrajectory(
+            $pdo,
+            $cog,
+            $sog,
+            $lat,
+            $lon,
+            $delta,
+            $heading,
+            $length,
+            $draft
+        );
+    }
+);
+
 $router->run();
 
 ?>

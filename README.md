@@ -32,7 +32,12 @@ si erreur http:
 
 tail -f /var/log/apache2/error.log
 
+run : 
+
+pip install --break-system-packages --no-cache-dir scikit-learn==1.3.2
+
 
 
 git config --global user.name "LERIOM"
 git config --global user.email "riom.antoin44@gmail.com"
+

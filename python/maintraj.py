@@ -7,7 +7,7 @@ import json
 
 # Charger le modèle entraîné
 script_dir = os.path.dirname(os.path.abspath(__file__))
-model_path = os.path.join(script_dir, "trajectoire.pkl")
+model_path = os.path.join(script_dir, "trajectoireLN.pkl")
 
 model = joblib.load(model_path)
 

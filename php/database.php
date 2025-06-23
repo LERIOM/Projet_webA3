@@ -115,36 +115,41 @@ function getredictCluster($pdo, $cog, $sog, $lat, $lon) {
     ]);
 }
 
-function getredictTrajectoire($pdo,$lat,$lon,$sog,$cog,$heading,$length,$draft,$delta_seconds) {
-
-    $args = [
-        escapeshellarg($cog),
-        escapeshellarg($sog),
+function getPredictTrajectory(
+    PDO $pdo,
+    $cog,
+    $sog,
+    $lat,
+    $lon,
+    $delta,
+    $heading,
+    $length,
+    $draft
+) {
+    // 1) Construire la ligne de commande avec options nommées
+    $cmd = sprintf(
+        'python3 /var/www/html/Projet_webA3/python/maintraj.py ' .
+        '--lat %s --lon %s --sog %s --cog %s --heading %s --length %s --draft %s --delta_seconds %s 2>&1',
         escapeshellarg($lat),
         escapeshellarg($lon),
+        escapeshellarg($sog),
+        escapeshellarg($cog),
         escapeshellarg($heading),
         escapeshellarg($length),
         escapeshellarg($draft),
-        escapeshellarg($delta_seconds)
-    ];
+        escapeshellarg($delta)
+    );
 
-    $cmd = 'python3 /var/www/html/Projet_webA3/python/maintraj.py ' .
-           implode(' ', $args) . ' 2>&1';
+    // 2) Exécuter
+    $result = shell_exec($cmd);
 
-    $output = shell_exec($cmd);
+    // 3) Décoder le JSON
+  
 
-    // On suppose que le script renvoie du JSON
-    $data = json_decode($output, true);
-
-    if ($data !== null) {
-        // Succès : on renvoie les données produites par Python
-        return Response::HTTP200($data);
-    }
-
-    // Échec : JSON invalide ou autre erreur
-    return Response::HTTP500([
-        'message' => 'Erreur lors de l\'exécution du script Python ou JSON malformé',
-        'output'  => $output          // utile pour le débogage
-    ]);
+    if (!empty($result)) {
+      return Response::HTTP200($result);
+    } else {
+      return Response::HTTP404(['message' => 'error']);
+  }
 }
 ?> 
