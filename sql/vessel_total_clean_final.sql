@@ -18,12 +18,12 @@ CREATE TABLE IF NOT EXISTS vessel_total_clean_final (
     draft DOUBLE PRECISION,
     cargo DOUBLE PRECISION,
     transceiver_class TEXT
-);
+    );
 
 ALTER TABLE vessel_total_clean_final ADD PRIMARY KEY (id);
 
 -- PostgreSQL bulk import
-COPY vessel_total_clean_final FROM '/root/Projet_webA3/source/csv/vessel-total-clean-final.csv' DELIMITER ',' CSV HEADER NULL 'NA';
+COPY vessel_total_clean_final FROM '/var/www/html/Projet_webA3/csv/vessel-total-clean-final.csv' DELIMITER ',' CSV HEADER NULL 'NA';
 
 -- LOAD DATA INFILE '/path/to/vessel-total-clean-final.csv'
 -- INTO TABLE vessel_total_clean_final
