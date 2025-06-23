@@ -20,6 +20,7 @@ $router = new Router();
 $router->GET('/test', [], function(){
   global $pdo;
   test($pdo);
+
 });
 
 

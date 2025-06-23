@@ -27,8 +27,11 @@ function test($db){
   $query = $db->prepare('SELECT * FROM vessel_total_clean_final WHERE mmsi=366872110;');
   $query->execute();
   $result = $query->fetchAll(PDO::FETCH_ASSOC);
-
-  return $result;
+  if (!empty($result)) {
+      return Response::HTTP200($result);
+    } else {
+      return Response::HTTP200(['resp_capacity' => 20]);
+  }
 }
 
 
