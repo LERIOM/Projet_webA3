@@ -23,6 +23,10 @@ $router->GET('/test', [], function(){
 
 });
 
+$router->POST('/boat', ["id ","mmsi ","base_date_time ","lat ","lon ","sog ","cog ","heading ","vessel_name ","imo ","call_sign ","vessel_type ","status ","length ","width ","draft ","cargo ","transceiver_class"], function($mmsi, $password){
+  global $pdo;
+  postBoat($pdo,$id, $mmsi, $base_date_time, $lat, $lon, $sog, $cog, $heading, $vessel_name, $imo, $call_sign, $vessel_type, $status, $length, $width, $draft, $cargo, $transceiver_class);
+});
 
 $router->run();
 

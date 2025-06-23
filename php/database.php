@@ -34,5 +34,31 @@ function test($db){
   }
 }
 
+function postBoat($pdo,$id, $mmsi, $base_date_time, $lat, $lon, $sog, $cog, $heading, $vessel_name, $imo, $call_sign, $vessel_type, $status, $length, $width, $draft, $cargo, $transceiver_class){
+  $query = $pdo->prepare('INSERT INTO vessel_total_clean_final (id, mmsi, base_date_time, lat, lon, sog, cog, heading, vessel_name, imo, call_sign, vessel_type, status, length, width, draft, cargo, transceiver_class) VALUES (:id, :mmsi, :base_date_time, :lat, :lon, :sog, :cog, :heading, :vessel_name, :imo, :call_sign, :vessel_type, :status, :length, :width, :draft, :cargo, :transceiver_class)');
+  $query->bindParam(':id', $id);
+  $query->bindParam(':mmsi', $mmsi);
+  $query->bindParam(':base_date_time', $base_date_time);
+  $query->bindParam(':lat', $lat);
+  $query->bindParam(':lon', $lon);
+  $query->bindParam(':sog', $sog);
+  $query->bindParam(':cog', $cog);
+  $query->bindParam(':heading', $heading);
+  $query->bindParam(':vessel_name', $vessel_name);
+  $query->bindParam(':imo', $imo);
+  $query->bindParam(':call_sign', $call_sign);
+  $query->bindParam(':vessel_type', $vessel_type);
+  $query->bindParam(':status', $status);
+  $query->bindParam(':length', $length);
+  $query->bindParam(':width', $width);
+  $query->bindParam(':draft', $draft);
 
-?>
+
+  $cargo = $cargo ?: null; // Handle null value
+  $query->bindParam(':cargo', $cargo);
+  
+  $query->bindParam(':transceiver_class', $transceiver_class);
+  $query->execute();
+  return Response::HTTP201();
+}
+?> 

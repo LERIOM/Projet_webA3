@@ -30,3 +30,4 @@ COPY vessel_total_clean_final FROM '/root/Projet_webA3/source/csv/vessel-total-c
 -- FIELDS TERMINATED BY ',' ENCLOSED BY '"'
 -- LINES TERMINATED BY '\n'
 -- IGNORE 1 LINES;
+
