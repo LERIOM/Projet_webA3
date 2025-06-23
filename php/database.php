@@ -53,12 +53,36 @@ function postBoat($pdo,$id, $mmsi, $base_date_time, $lat, $lon, $sog, $cog, $hea
   $query->bindParam(':width', $width);
   $query->bindParam(':draft', $draft);
 
-
   $cargo = $cargo ?: null; // Handle null value
   $query->bindParam(':cargo', $cargo);
-  
+
   $query->bindParam(':transceiver_class', $transceiver_class);
   $query->execute();
   return Response::HTTP201();
+}
+
+
+function getTabMmsi($pdo, $mmsi) {
+  $query = $pdo->prepare('SELECT * FROM vessel_total_clean_final WHERE mmsi = :mmsi');
+  $query->bindParam(':mmsi', $mmsi);
+  $query->execute();
+  $result = $query->fetchAll(PDO::FETCH_ASSOC);
+  
+  if (!empty($result)) {
+    return Response::HTTP200($result);
+  } else {
+    return Response::HTTP404(['message' => 'No boat found with the given MMSI']);
+  }
+}
+
+function getAllBoats($pdo) {
+  $query = $pdo->prepare('SELECT length , width, draft, cog, sog, heading , lat, long FROM vessel_total_clean_final');
+  $query->execute();
+  $result = $query->fetchAll(PDO::FETCH_ASSOC);
+  if (!empty($result)) {
+    return Response::HTTP200($result);
+  } else {
+    return Response::HTTP404(['message' => 'No boats found']);
+  }
 }
 ?> 
