@@ -28,5 +28,7 @@ chmod 755 /var/www/html/Projet_webA3/csv
 # rendre le fichier lisible
 chmod 644 /var/www/html/Projet_webA3/source/csv/vessel-total-clean-final.csv
 
+si erreur http:
 
+tail -f /var/log/apache2/error.log
 

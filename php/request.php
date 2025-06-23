@@ -1,7 +1,7 @@
 <?php
 
 require_once 'Routeur/routeur.php';
-require_once 'constants.php';
+require_once __DIR__ . '/constants.php';
 require_once 'database.php';
 
 ini_set('display_errors', 1);

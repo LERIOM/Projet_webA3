@@ -2,7 +2,7 @@
 
   require_once('constants.php');
   require_once('Routeur/response.php');
-  require_once("model/global.php");
+  #require_once("model/global.php");
 
 /**
  * Create the connection to the database.
@@ -24,10 +24,9 @@
   }
  
 function test($db){
-  // echo $id;
-  $query = $db->prepare('SELECT * FROM vessel_total_clean_final WHERE vessel_type = 60;');
-  //$query->execute(array(':id_user' => $id));
-  $result = $query->fetch(PDO::FETCH_ASSOC);
+  $query = $db->prepare('SELECT * FROM vessel_total_clean_final WHERE mmsi=366872110;');
+  $query->execute();
+  $result = $query->fetchAll(PDO::FETCH_ASSOC);
 
   return $result;
 }

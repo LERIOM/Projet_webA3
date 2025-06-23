@@ -27,3 +27,13 @@ function getTabSearch(){
 }
 
 
+function test(){
+    ajaxRequest('GET','/php/request.php/test', function(responses){
+        if(!responses.error){
+            console.log(responses);
+        }
+        else{
+            console.log(responses);
+        }
+    });
+}
