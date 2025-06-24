@@ -4,7 +4,6 @@
 require __DIR__ . '/../vendor/autoload.php';
 use OpenAI;
 
-echo "Chat Controller Loaded\n";
 
 /**
  * Gère la requête de chat, appelle l'API OpenAI pour générer du SQL,
