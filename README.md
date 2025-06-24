@@ -50,3 +50,4 @@ git config --global user.email "riom.antoin44@gmail.com"
 
 
 
+    $openai = OpenAI::client('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');
