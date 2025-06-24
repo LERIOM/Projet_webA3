@@ -24,7 +24,20 @@
   }
  
 function test($db){
-  $query = $db->prepare('SELECT * FROM vessel_total_clean_final WHERE mmsi=366872110;');
+  $query = $db->prepare(
+      'SELECT b.*, 
+              p.base_date_time, p.lat, p.lon, p.sog, p.cog, p.heading, 
+              ns.description AS status_description
+       FROM boat AS b
+       LEFT JOIN LATERAL (
+           SELECT * FROM position AS p2
+           WHERE p2.mmsi = b.mmsi
+           ORDER BY p2.base_date_time DESC
+           LIMIT 1
+       ) AS p ON true
+       LEFT JOIN navigation_status AS ns ON ns.id_status = p.id_status
+       WHERE b.mmsi = 366872110;'
+  );
   $query->execute();
   $result = $query->fetchAll(PDO::FETCH_ASSOC);
   if (!empty($result)) {
@@ -35,35 +48,79 @@ function test($db){
 }
 
 function postBoat($pdo,$id, $mmsi, $base_date_time, $lat, $lon, $sog, $cog, $heading, $vessel_name, $imo, $call_sign, $vessel_type, $status, $length, $width, $draft, $cargo, $transceiver_class){
-  $query = $pdo->prepare('INSERT INTO vessel_total_clean_final (id, mmsi, base_date_time, lat, lon, sog, cog, heading, vessel_name, imo, call_sign, vessel_type, status, length, width, draft, cargo, transceiver_class) VALUES (:id, :mmsi, :base_date_time, :lat, :lon, :sog, :cog, :heading, :vessel_name, :imo, :call_sign, :vessel_type, :status, :length, :width, :draft, :cargo, :transceiver_class)');
-  $query->bindParam(':id', $id);
-  $query->bindParam(':mmsi', $mmsi);
-  $query->bindParam(':base_date_time', $base_date_time);
-  $query->bindParam(':lat', $lat);
-  $query->bindParam(':lon', $lon);
-  $query->bindParam(':sog', $sog);
-  $query->bindParam(':cog', $cog);
-  $query->bindParam(':heading', $heading);
-  $query->bindParam(':vessel_name', $vessel_name);
-  $query->bindParam(':imo', $imo);
-  $query->bindParam(':call_sign', $call_sign);
-  $query->bindParam(':vessel_type', $vessel_type);
-  $query->bindParam(':status', $status);
-  $query->bindParam(':length', $length);
-  $query->bindParam(':width', $width);
-  $query->bindParam(':draft', $draft);
+  // 1) Insertion ou mise à jour du bateau
+  $boatStmt = $pdo->prepare(
+      'INSERT INTO boat (mmsi, vessel_name, length, width, draft, vessel_type,
+                         imo, call_sign, cargo, transceiver_class)
+       VALUES (:mmsi, :vessel_name, :length, :width, :draft, :vessel_type,
+               :imo, :call_sign, :cargo, :transceiver_class)
+       ON CONFLICT (mmsi) DO UPDATE
+         SET vessel_name       = EXCLUDED.vessel_name,
+             length            = EXCLUDED.length,
+             width             = EXCLUDED.width,
+             draft             = EXCLUDED.draft,
+             vessel_type       = EXCLUDED.vessel_type,
+             imo               = EXCLUDED.imo,
+             call_sign         = EXCLUDED.call_sign,
+             cargo             = EXCLUDED.cargo,
+             transceiver_class = EXCLUDED.transceiver_class'
+  );
+  $boatStmt->execute([
+      ':mmsi'             => $mmsi,
+      ':vessel_name'      => $vessel_name,
+      ':length'           => $length,
+      ':width'            => $width,
+      ':draft'            => $draft,
+      ':vessel_type'      => $vessel_type,
+      ':imo'              => $imo,
+      ':call_sign'        => $call_sign,
+      ':cargo'            => $cargo ?: null,   // NULL si vide
+      ':transceiver_class'=> $transceiver_class
+  ]);
 
-  $cargo = $cargo ?: null; // Handle null value
-  $query->bindParam(':cargo', $cargo);
+  // 2) S’assurer que le statut existe
+  $statusStmt = $pdo->prepare(
+      'INSERT INTO navigation_status (id_status) VALUES (:status)
+       ON CONFLICT DO NOTHING'
+  );
+  $statusStmt->execute([':status' => $status]);
 
-  $query->bindParam(':transceiver_class', $transceiver_class);
-  $query->execute();
+  // 3) Insertion de la position
+  $posStmt = $pdo->prepare(
+      'INSERT INTO position (base_date_time, lat, lon, sog, cog, heading,
+                             id_status, mmsi)
+       VALUES (:base_date_time, :lat, :lon, :sog, :cog, :heading, :status, :mmsi)'
+  );
+  $posStmt->execute([
+      ':base_date_time' => $base_date_time,
+      ':lat'            => $lat,
+      ':lon'            => $lon,
+      ':sog'            => $sog,
+      ':cog'            => $cog,
+      ':heading'        => $heading,
+      ':status'         => $status,
+      ':mmsi'           => $mmsi
+  ]);
+
   return Response::HTTP201();
 }
 
 
 function getTabMmsi($pdo, $mmsi) {
-  $query = $pdo->prepare('SELECT * FROM vessel_total_clean_final WHERE mmsi = :mmsi LIMIT 1');
+  $query = $pdo->prepare(
+      'SELECT b.*, 
+              p.base_date_time, p.lat, p.lon, p.sog, p.cog, p.heading,
+              ns.description AS status_description
+       FROM boat AS b
+       LEFT JOIN LATERAL (
+           SELECT * FROM position AS p2
+           WHERE p2.mmsi = b.mmsi
+           ORDER BY p2.base_date_time DESC
+           LIMIT 1
+       ) AS p ON true
+       LEFT JOIN navigation_status AS ns ON ns.id_status = p.id_status
+       WHERE b.mmsi = :mmsi'
+  );
   $query->bindParam(':mmsi', $mmsi);
   $query->execute();
   $result = $query->fetchAll(PDO::FETCH_ASSOC);
@@ -76,7 +133,19 @@ function getTabMmsi($pdo, $mmsi) {
 }
 
 function getAllBoats($pdo) {
-  $query = $pdo->prepare('SELECT length , width, draft, cog, sog, heading , lat, lon FROM vessel_total_clean_final');
+  $query = $pdo->prepare(
+      'SELECT b.mmsi,
+              b.length, b.width, b.draft,
+              p.cog, p.sog, p.heading,
+              p.lat, p.lon
+       FROM boat AS b
+       LEFT JOIN LATERAL (
+           SELECT * FROM position AS p2
+           WHERE p2.mmsi = b.mmsi
+           ORDER BY p2.base_date_time DESC
+           LIMIT 1
+       ) AS p ON true'
+  );
   $query->execute();
   $result = $query->fetchAll(PDO::FETCH_ASSOC);
   if (!empty($result)) {
