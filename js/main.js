@@ -81,3 +81,40 @@ function getPredictTrajectory( cog, sog, lat, lon, delta, heading,length, draft)
         }
     });
 }
+
+/**
+ * Envoie le texte de l'utilisateur au chatbot via l'API OpenAI et affiche la réponse.
+ * @param {string} promptText - Le texte saisi par l'utilisateur.
+ */
+function sendChat(promptText) {
+  appendMessage(promptText, 'user');
+  fetch('/php/chat.php', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({ prompt: promptText })
+  })
+  .then(response => response.json())
+  .then(data => {
+    appendMessage(data.answer, 'bot');
+  })
+  .catch(error => {
+    console.error('Erreur chat API:', error);
+  });
+}
+
+/**
+ * Ajoute un message à la zone de chat.
+ * @param {string} text - Le texte du message.
+ * @param {string} sender - 'user' ou 'bot' pour appliquer un style.
+ */
+function appendMessage(text, sender) {
+    console.log('Message from ' + sender + ': ' + text);
+/*
+  const messagesEl = document.getElementById('messages');
+  if (!messagesEl) return;
+  const div = document.createElement('div');
+  div.className = 'msg ' + sender;
+  div.textContent = text;
+  messagesEl.appendChild(div);
+  messagesEl.scrollTop = messagesEl.scrollHeight;*/
+}

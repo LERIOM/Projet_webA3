@@ -3,6 +3,7 @@
 require_once 'Routeur/routeur.php';
 require_once __DIR__ . '/constants.php';
 require_once 'database.php';
+require_once __DIR__ . '/chatController.php';
 
 ini_set('display_errors', 1);
 error_reporting(E_ALL);
@@ -70,6 +71,12 @@ $router->GET(
         );
     }
 );
+
+// Route pour le chatbot OpenAI
+$router->POST('/chat', ['prompt'], function($prompt) {
+    global $pdo;
+    handleChat($pdo, $prompt);
+});
 
 $router->run();
 
