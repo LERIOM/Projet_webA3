@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Prédictions</title>
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #1a3a60;
+      color: white;
+    }
+
+    .container {
+      padding: 20px;
+      text-align: center;
+    }
+
+    .navigation {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background-color: #000000bb;
+      padding: 10px 20px;
+      border-radius: 8px;
+    }
+
+    .navigation a {
+      text-decoration: none;
+      color: white;
+      font-weight: bold;
+    }
+
+    .header {
+      font-size: 3em;
+      font-weight: bold;
+      margin-bottom: 40px;
+    }
+
+    .buttons {
+      display: flex;
+      justify-content: center;
+      gap: 40px;
+      margin-bottom: 30px;
+    }
+
+    .btn {
+      background-color: #0d1f3c;
+      color: white;
+      padding: 15px 30px;
+      border-radius: 10px;
+      font-weight: bold;
+      font-size: 1.1em;
+      cursor: pointer;
+      border: none;
+      transition: background 0.3s ease;
+    }
+
+    .btn:hover {
+      background-color: #142b4d;
+    }
+
+    .data-table {
+      margin: 0 auto;
+      width: 95%;
+      border-collapse: collapse;
+      font-size: 0.9em;
+    }
+
+    .data-table th, .data-table td {
+      border: 1px solid white;
+      padding: 8px;
+      text-align: center;
+    }
+
+    .data-table th {
+      background-color: #243b55;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="navigation">
+      <a href="#">Accueil</a>
+    </div>
+
+    <div class="header">Prédictions</div>
+
+    <div class="buttons">
+      <button class="btn">Prédire le type</button>
+      <button class="btn">Prédire la trajectoire</button>
+    </div>
+
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th># MMSI</th><th>BaseDateTime</th><th>LAT</th><th>LON</th><th>SOG</th><th>COG</th><th>Heading</th><th>VesselName</th><th>IMO</th><th>CallSign</th><th>Status</th><th>Length</th><th>Width</th><th>Draft</th><th>Cargo</th><th>TransceiverClass</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>368713000</td><td>2023-05-29 00:00:00</td><td>29.97675</td><td>-89.9285</td><td>13.4</td><td>227.8</td><td>227</td><td>STOLT LOTUS</td><td>IMO6817648</td><td>DAWB5</td><td>0</td><td>183</td><td>28</td><td>10</td><td>83</td><td>A</td></tr>
+        <tr><td>367387310</td><td>2023-05-29 00:00:00</td><td>29.97693</td><td>-89.9295</td><td>1.6</td><td>176.6</td><td>511</td><td>ISLAND QUEEN</td><td>IV</td><td>WDE8611</td><td>0</td><td>30</td><td>13</td><td>3</td><td>31</td><td>A</td></tr>
+        <tr><td>367478280</td><td>2023-05-29 00:00:00</td><td>29.95767</td><td>-89.9086</td><td>5.7</td><td>348.1</td><td>260</td><td>HERO</td><td>IMO9681447</td><td>WDF2114</td><td>60</td><td>27</td><td>9</td><td>5</td><td>0</td><td>A</td></tr>
+        <tr><td>367591330</td><td>2023-05-29 00:00:00</td><td>29.9568</td><td>-89.9052</td><td>4.5</td><td>260.4</td><td>511</td><td>FRANK H</td><td>IV</td><td>WDF5212</td><td>60</td><td>15</td><td>7</td><td>5</td><td>0</td><td>A</td></tr>
+        <tr><td>368120000</td><td>2023-05-29 00:00:00</td><td>29.95507</td><td>-89.9055</td><td>0.0</td><td>351.1</td><td>360</td><td>ADR LAB</td><td>IMO8793963</td><td>WDF3816</td><td>0</td><td>49</td><td>15</td><td>5</td><td>0</td><td>A</td></tr>
+        <tr><td>368154420</td><td>2023-05-29 00:00:00</td><td>29.95493</td><td>-89.9062</td><td>0.1</td><td>48.4</td><td>360</td><td>PROVINCETOWN II</td><td>IMO9231984</td><td>WDF3816</td><td>60</td><td>49</td><td>15</td><td>5</td><td>0</td><td>A</td></tr>
+        <tr><td>367587420</td><td>2023-05-29 00:00:00</td><td>29.95353</td><td>-89.9058</td><td>0.0</td><td>0.0</td><td>511</td><td>RAY STOCKER JR</td><td>IMO9518719</td><td>WDL9195</td><td>0</td><td>19</td><td>7</td><td>5</td><td>0</td><td>A</td></tr>
+        <tr><td>367387420</td><td>2023-05-29 00:00:00</td><td>29.94862</td><td>-89.9643</td><td>6.1</td><td>277.3</td><td>511</td><td>MISS CATLIN</td><td>IV</td><td>WCY6375</td><td>60</td><td>15</td><td>12</td><td>5</td><td>31</td><td>A</td></tr>
+      </tbody>
+    </table>
+  </div>
+</body>
+</html>
