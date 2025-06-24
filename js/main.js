@@ -77,7 +77,7 @@ function getPredictTrajectory( cog, sog, lat, lon, delta, heading,length, draft)
         if (prediction) {
             console.log('Latitude :', prediction.lat);
         } else {
-            console.error('Réponse inattendue :', responses);
+            console.error('Réponse inattendue:', responses);
         }
     });
 }

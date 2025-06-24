@@ -1,1 +1,1 @@
-SELECT * FROM vessel_total_clean_final WHERE id=310;
+SELECT * FROM vessel_total_clean_final WHERE mmsi = '366872110';

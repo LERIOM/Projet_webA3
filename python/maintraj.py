@@ -45,7 +45,8 @@ X_new = pd.DataFrame(
 
 predicted_position = model.predict(X_new)
 
-pred_lat, pred_lon = map(float, predicted_position[0])
+# Arrondir à 5 décimales
+pred_lat, pred_lon = [round(float(coord), 5) for coord in predicted_position[0]]
 
 result = [{
     "lat": pred_lat,
