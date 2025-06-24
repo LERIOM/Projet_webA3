@@ -117,21 +117,3 @@ function appendMessage(text, sender) {
     messagesEl.scrollTop = messagesEl.scrollHeight;
 }
 
-document.addEventListener('DOMContentLoaded', function() {
-  const sendBtn = document.getElementById('send');
-  const promptEl = document.getElementById('prompt');
-  if (sendBtn && promptEl) {
-    sendBtn.addEventListener('click', function() {
-      const text = promptEl.value.trim();
-      if (text) {
-        sendChat(text);
-        promptEl.value = '';
-      }
-    });
-    promptEl.addEventListener('keypress', function(e) {
-      if (e.key === 'Enter') {
-        sendBtn.click();
-      }
-    });
-  }
-});
