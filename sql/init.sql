@@ -1,1 +1,2 @@
-SELECT * FROM vessel_total_clean_final WHERE mmsi = '366872110';
+
+SELECT * FROM position WHERE mmsi = 366872110 ORDER BY base_date_time DESC LIMIT 5;
