@@ -13,7 +13,7 @@ use OpenAI;
  */
 function handleChat(PDO $pdo, string $prompt) {
     // Initialisation du client OpenAI (remplacez sk-… par votre clé)
-    $openai = OpenAI::client('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');
+    
 
     // Génération de la description du schéma de la base
     $tables = $pdo
