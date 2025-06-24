@@ -1,13 +1,15 @@
-DROP TABLE IF EXISTS vessel_total_clean_final;
-/* 0. — Nettoyage de l’ancien schéma
------------------------------------*/
+/* ---------------------------------------------------------------------------
+   0 — Réinitialisation de l’ancien schéma
+--------------------------------------------------------------------------- */
+    -- ancienne table à supprimer
 DROP TABLE IF EXISTS position           CASCADE;
 DROP TABLE IF EXISTS boat               CASCADE;
-DROP TABLE IF EXISTS navigation_status  CASCADE;   -- « status » est un mot un peu ambigu
+DROP TABLE IF EXISTS navigation_status  CASCADE;
 DROP TABLE IF EXISTS vessel_total_stage;
 
-/* 1. — Table tampon pour l’import CSV
---------------------------------------*/
+/* ---------------------------------------------------------------------------
+   1 — Table tampon (UNLOGGED) + import CSV
+--------------------------------------------------------------------------- */
 CREATE UNLOGGED TABLE vessel_total_stage (
     id                 INTEGER,
     mmsi               BIGINT,
@@ -21,22 +23,24 @@ CREATE UNLOGGED TABLE vessel_total_stage (
     imo                TEXT,
     call_sign          TEXT,
     vessel_type        INTEGER,
-    status             INTEGER,             -- colonne NAVSTAT du message AIS
+    status             DOUBLE PRECISION,    -- NAVSTAT AIS (accepts 0.0, 15.0…)
     length             DOUBLE PRECISION,
     width              DOUBLE PRECISION,
     draft              DOUBLE PRECISION,
     cargo              DOUBLE PRECISION,
-    transceiver_class  TEXT
+    transceiver_class  TEXT,
+    cluster_kmeans     INTEGER              -- ★ nouveau champ ★
 );
 
 COPY vessel_total_stage
-FROM '/var/www/html/Projet_webA3/csv/vessel-total-clean-final.csv'
+FROM '/var/www/html/Projet_webA3/csv/data_base_150_with_clusters.csv'
 DELIMITER ','
 CSV HEADER
 NULL 'NA';
 
-/* 2. — Tables définitives du modèle
-------------------------------------*/
+/* ---------------------------------------------------------------------------
+   2 — Tables définitives
+--------------------------------------------------------------------------- */
 CREATE TABLE boat (
     mmsi               BIGINT PRIMARY KEY,
     vessel_name        TEXT,
@@ -47,7 +51,8 @@ CREATE TABLE boat (
     imo                TEXT,
     call_sign          TEXT,
     cargo              DOUBLE PRECISION,
-    transceiver_class  TEXT
+    transceiver_class  TEXT,
+    cluster_kmeans     INTEGER              -- ★ stocké dans BOAT ★
 );
 
 CREATE TABLE navigation_status (
@@ -63,18 +68,20 @@ CREATE TABLE position (
     sog             DOUBLE PRECISION,
     cog             DOUBLE PRECISION,
     heading         DOUBLE PRECISION,
-    id_status       INTEGER        REFERENCES navigation_status(id_status),
-    mmsi            BIGINT         REFERENCES boat(mmsi)
+    id_status       INTEGER REFERENCES navigation_status(id_status),
+    mmsi            BIGINT   REFERENCES boat(mmsi)
                        ON UPDATE CASCADE
                        ON DELETE CASCADE
 );
 
-/* 3. — Remplissage des tables
------------------------------*/
+/* ---------------------------------------------------------------------------
+   3 — Remplissage des tables
+--------------------------------------------------------------------------- */
 
-/* 3.1  Bateaux : un enregistrement unique par MMSI            */
+/* 3.1 — BOAT : un seul enregistrement par MMSI (ligne la plus récente) */
 INSERT INTO boat (mmsi, vessel_name, length, width, draft,
-                  vessel_type, imo, call_sign, cargo, transceiver_class)
+                  vessel_type, imo, call_sign, cargo,
+                  transceiver_class, cluster_kmeans)
 SELECT DISTINCT ON (mmsi)
        mmsi,
        vessel_name,
@@ -85,23 +92,20 @@ SELECT DISTINCT ON (mmsi)
        imo,
        call_sign,
        cargo,
-       transceiver_class
+       transceiver_class,
+       cluster_kmeans
 FROM vessel_total_stage
 WHERE mmsi IS NOT NULL
 ORDER BY mmsi, base_date_time DESC;
 
-/* 3.2  Statuts de navigation (NAVSTAT)                        */
+/* 3.2 — NAVIGATION_STATUS : dictionnaire des codes AIS NAVSTAT */
 INSERT INTO navigation_status (id_status)
-SELECT DISTINCT status
+SELECT DISTINCT status::INTEGER
 FROM vessel_total_stage
 WHERE status IS NOT NULL
 ORDER BY status;
 
-/* Vous pouvez ensuite mettre à jour la colonne description
-   manuellement ou via un UPDATE ... CASE ... pour documenter
-   le sens de chaque code AIS (0 = Under way using engine, etc.) */
-
-/* 3.3  Positions                                              */
+/* 3.3 — POSITION : une ligne par observation, sans le cluster */
 INSERT INTO position (base_date_time, lat, lon, sog, cog, heading,
                       id_status, mmsi)
 SELECT base_date_time,
@@ -110,12 +114,7 @@ SELECT base_date_time,
        sog,
        cog,
        heading,
-       status        AS id_status,
+       status::INTEGER AS id_status,
        mmsi
 FROM vessel_total_stage
 WHERE mmsi IS NOT NULL;
-
-/* 4. — Nettoyage facultatif                                   */
--- DROP TABLE vessel_total_stage;
-
-
