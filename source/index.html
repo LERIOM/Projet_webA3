@@ -3,91 +3,6 @@
   <head>
     <meta charset="utf-8" />
     <title>index</title>
-    <style>
-      /* Style général */
-      body {
-        background-color: #0b203a;
-        color: #fff;
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        margin: 0;
-        padding: 0;
-      }
-
-      /* Titre principal */
-      h1 {
-        text-align: center;
-        font-size: 3rem;
-        font-weight: bold;
-        margin-top: 40px;
-        color: #f2f2f2;
-        font-family: 'Georgia', serif;
-      }
-
-      /* Texte de présentation */
-      .container p {
-        font-size: 1.1rem;
-        line-height: 1.8rem;
-        max-width: 900px;
-        margin: 30px auto;
-        text-align: justify;
-        background-color: rgba(255, 255, 255, 0.05);
-        padding: 20px;
-        border-radius: 12px;
-        border-left: 5px solid #69c9d0;
-      }
-
-      /* Boutons de la page */
-      button {
-        display: inline-block;
-        background-color: #102e4a;
-        border: none;
-        color: white;
-        padding: 12px 25px;
-        margin: 10px;
-        border-radius: 8px;
-        font-size: 1rem;
-        transition: all 0.3s ease;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
-        cursor: pointer;
-      }
-
-      button:hover {
-        background-color: #2189b3;
-        transform: scale(1.05);
-      }
-
-      /* Navbar Bootstrap custom */
-      .navbar {
-        background-color: #051529 !important;
-      }
-
-      .navbar-nav .nav-link {
-        color: #051529 !important;
-        font-weight: bold;
-      }
-
-      .navbar-nav .nav-link:hover {
-        color: #69c9d0 !important;
-      }
-
-      .dropdown-menu {
-        background-color: #102e4a;
-        border: none;
-      }
-
-      .dropdown-item {
-        color: #fff;
-      }
-
-      .dropdown-item:hover {
-        background-color: #1f4666;
-      }
-
-      /* Responsive centering */
-      .container {
-        text-align: center;
-      }
-    </style>
     <link rel="stylesheet" href="/Projet_webA3/css/style.css" />
     <link
       href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
@@ -95,7 +10,7 @@
     />
   </head>
   <body>
-    <nav class="navbar navbar-expand-lg bg-body-tertiary">
+    <nav class="navbar navbar-expand-lg bg-body-primary">
       <div class="container-fluid">
         <a class="navbar-brand" href="#"> </a>
         <button
@@ -145,14 +60,7 @@
 
     <div class="container mt-4">
       <h1>Bienvenue sur la page d'accueil du projet !!!</h1>
-      <button
-        type="button"
-        onclick="getPredictTrajectory(307, 9, 25, -80, 300, 50, 34, 9)"
-      >
-        Cliquez ici
-      </button>
-      <button type="button" onclick="test()">Cliquez ici</button>
-      <p>
+      <p style="text-align: justify;">
         Bienvenue sur le site web de notre projet outils complexes !<br />
         Ces 4 dernières semaines nous avons travaillé sur une base de données de
         bateaux naviguant dans le golfe du Mexique. <br />
