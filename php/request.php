@@ -72,9 +72,12 @@ $router->GET(
     }
 );
 
-// Route pour le chatbot OpenAI
-$router->POST('/chat', ['prompt'], function($prompt) {
+
+
+$router->POST('/chat', [], function() {
     global $pdo;
+    $input = json_decode(file_get_contents('php://input'), true);
+    $prompt = $input['prompt'] ?? '';
     handleChat($pdo, $prompt);
 });
 

@@ -88,7 +88,7 @@ function getPredictTrajectory( cog, sog, lat, lon, delta, heading,length, draft)
  */
 function sendChat(promptText) {
   appendMessage(promptText, 'user');
-  fetch('/php/chat.php', {
+  fetch('/php/request.php/chat', {
     method: 'POST',
     headers: {'Content-Type': 'application/json'},
     body: JSON.stringify({ prompt: promptText })
@@ -108,13 +108,30 @@ function sendChat(promptText) {
  * @param {string} sender - 'user' ou 'bot' pour appliquer un style.
  */
 function appendMessage(text, sender) {
-    console.log('Message from ' + sender + ': ' + text);
-/*
-  const messagesEl = document.getElementById('messages');
-  if (!messagesEl) return;
-  const div = document.createElement('div');
-  div.className = 'msg ' + sender;
-  div.textContent = text;
-  messagesEl.appendChild(div);
-  messagesEl.scrollTop = messagesEl.scrollHeight;*/
+    const messagesEl = document.getElementById('messages');
+    if (!messagesEl) return;
+    const div = document.createElement('div');
+    div.className = 'msg ' + sender;
+    div.textContent = text;
+    messagesEl.appendChild(div);
+    messagesEl.scrollTop = messagesEl.scrollHeight;
 }
+
+document.addEventListener('DOMContentLoaded', function() {
+  const sendBtn = document.getElementById('send');
+  const promptEl = document.getElementById('prompt');
+  if (sendBtn && promptEl) {
+    sendBtn.addEventListener('click', function() {
+      const text = promptEl.value.trim();
+      if (text) {
+        sendChat(text);
+        promptEl.value = '';
+      }
+    });
+    promptEl.addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') {
+        sendBtn.click();
+      }
+    });
+  }
+});
