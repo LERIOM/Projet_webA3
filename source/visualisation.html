@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Visualisation sur une carte</title>
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #1a3a60;
+      color: white;
+    }
+    .container {
+      padding: 20px;
+    }
+    .header {
+      text-align: center;
+      font-size: 2.5em;
+      font-weight: bold;
+      margin-bottom: 20px;
+    }
+    .map-container {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 20px;
+    }
+    .map {
+      width: 90%;
+      height: 400px;
+      background-color: #f5f5f5;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    .data-table {
+      margin: 0 auto;
+      width: 90%;
+      border-collapse: collapse;
+    }
+    .data-table th, .data-table td {
+      border: 1px solid white;
+      padding: 8px;
+      text-align: center;
+    }
+    .data-table th {
+      background-color: #243b55;
+      color: white;
+    }
+    .navigation {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background-color: #000000bb;
+      padding: 10px 20px;
+      border-radius: 8px;
+    }
+    .navigation a {
+      text-decoration: none;
+      color: white;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="navigation">
+      <a href="#">Accueil</a>
+    </div>
+    <div class="header">Visualisation sur une carte :</div>
+    <div class="map-container">
+      <div class="map" id="map"></div>
+    </div>
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th># MMSI</th>
+          <th>BaseDateTime</th>
+          <th>LAT</th>
+          <th>LON</th>
+          <th>SOG</th>
+          <th>COG</th>
+          <th>Heading</th>
+          <th>VesselName</th>
+          <th>IMO</th>
+          <th>CallSign</th>
+          <th>Status</th>
+          <th>Length</th>
+          <th>Width</th>
+          <th>Draught</th>
+          <th>Cargo</th>
+          <th>TransceiverClass</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>367000100</td>
+          <td>2023-06-23 20:00:00</td>
+          <td>29.456</td>
+          <td>-94.894</td>
+          <td>15</td>
+          <td>194</td>
+          <td>227</td>
+          <td>GOT OTUS</td>
+          <td>1234567</td>
+          <td>WDSP1</td>
+          <td>A</td>
+          <td>100</td>
+          <td>20</td>
+          <td>5</td>
+          <td>0</td>
+          <td>A</td>
+        </tr>
+        <!-- Ajoutez d'autres lignes ici -->
+      </tbody>
+    </table>
+  </div>
+</body>
+</html>
