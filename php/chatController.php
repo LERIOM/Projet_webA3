@@ -1,3 +1,4 @@
+
 <?php
 // Contrôleur pour gérer les requêtes du chatbot OpenAI
 require __DIR__ . '/../vendor/autoload.php';
@@ -10,34 +11,55 @@ use OpenAI;
  * @param PDO    $pdo    Instance PDO de la base de données.
  * @param string $prompt Texte saisi par l'utilisateur.
  */
-
 function handleChat(PDO $pdo, string $prompt) {
-    // Initialisation du client OpenAI
-    $openai = OpenAI::client('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');
+    // Initialisation du client OpenAI (remplacez sk-… par votre clé)
+    $openai = OpenAI::client('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');
+
+    // Génération de la description du schéma de la base
+    $tables = $pdo
+        ->query("SELECT table_name FROM information_schema.tables WHERE table_schema='public'")
+        ->fetchAll(PDO::FETCH_COLUMN);
+    $schemaDesc = "Schéma de la base de données :";
+    foreach ($tables as $tableName) {
+        $columns = $pdo
+            ->query("
+                SELECT column_name, data_type
+                FROM information_schema.columns
+                WHERE table_schema = 'public'
+                  AND table_name   = '{$tableName}'
+            ")
+            ->fetchAll(PDO::FETCH_ASSOC);
+        $colList = array_map(
+            fn($col) => "{$col['column_name']}:{$col['data_type']}",
+            $columns
+        );
+        $schemaDesc .= "\n- {$tableName} : " . implode(', ', $colList) . ";";
+    }
 
     // Définition de la fonction pour le function calling
     $functions = [
         [
-            'name' => 'query_database',
+            'name'        => 'query_database',
             'description' => 'Exécute une requête SELECT sur la base et renvoie les résultats JSON.',
-            'parameters' => [
-                'type' => 'object',
+            'parameters'  => [
+                'type'       => 'object',
                 'properties' => [
                     'sql' => [
-                        'type' => 'string',
+                        'type'        => 'string',
                         'description' => 'Une requête SQL SELECT valide, sans opérations DML/DDL.'
                     ]
                 ],
-                'required' => ['sql']
+                'required'   => ['sql']
             ]
         ]
     ];
 
     // Appel à l'API Chat Completions avec function_call
     $response = $openai->chat()->create([
-        'model' => 'gpt-4o-mini',
-        'messages' => [
+        'model'         => 'gpt-4o-mini',
+        'messages'      => [
             ['role' => 'system', 'content' => 'Tu es un assistant SQL pour la base de données AIS.'],
+            ['role' => 'system', 'content' => $schemaDesc],
             ['role' => 'user',   'content' => $prompt]
         ],
         'functions'     => $functions,
@@ -45,13 +67,14 @@ function handleChat(PDO $pdo, string $prompt) {
     ]);
 
     $choice = $response['choices'][0] ?? null;
+    $answer = '';
 
-    // Vérification du function_call du modèle
+    // Traitement du function_call
     if ($choice && isset($choice['message']['function_call'])) {
         $args = json_decode($choice['message']['function_call']['arguments'], true);
         $sql  = $args['sql'] ?? '';
 
-        // Sécurité : n'accepter que les SELECT
+        // Sécurité : n’accepter que les SELECT
         if (stripos(trim($sql), 'select') !== 0) {
             $answer = "Je ne peux exécuter que des requêtes SELECT.";
         } else {
@@ -66,7 +89,7 @@ function handleChat(PDO $pdo, string $prompt) {
         }
     } else {
         // Fallback si pas de function_call
-        $answer = $choice['message']['content'] ?? 'Désolé, je n\'ai pas compris.';
+        $answer = $choice['message']['content'] ?? 'Désolé, je n’ai pas compris.';
     }
 
     // Envoi de la réponse JSON au client

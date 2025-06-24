@@ -1,2 +1,11 @@
-
-SELECT * FROM position WHERE mmsi = 366872110 ORDER BY base_date_time DESC LIMIT 10;
+SELECT
+    mmsi,
+    vessel_name,
+    length,
+    width,
+    draft
+FROM boat
+WHERE length = (
+    SELECT MAX(length)
+    FROM boat
+);
