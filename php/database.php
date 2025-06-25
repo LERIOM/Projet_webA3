@@ -221,4 +221,18 @@ function getPredictTrajectory(
       return Response::HTTP404(['message' => 'error']);
   }
 }
+
+ function GetTabVessselsName($pdo){
+    $query = $pdo->prepare(
+        'SELECT DISTINCT vessel_name FROM boat ORDER BY vessel_name'
+    );
+    $query->execute();
+    $result = $query->fetchAll(PDO::FETCH_ASSOC);
+    
+    if (!empty($result)) {
+        return Response::HTTP200($result);
+    } else {
+        return Response::HTTP404(['message' => 'No vessel names found']);
+    }
+ }
 ?> 

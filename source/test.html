@@ -60,12 +60,12 @@
     currentRow.appendChild(td);
   });
 
-  // Si la dernière ligne est incomplète (moins de 4), on la complète avec des cellules vides
+  // Si la dernière ligne n'est pas complète, on ajoute des cellules vides
   const missing = vesselNames.length % 4;
   if (missing !== 0) {
     for (let i = missing; i < 4; i++) {
       const emptyTd = document.createElement('td');
-      emptyTd.innerHTML = '&nbsp;'; // espace insécable
+      emptyTd.innerHTML = '&nbsp;'; // Pour afficher un espace vide
       currentRow.appendChild(emptyTd);
     }
   }

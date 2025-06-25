@@ -126,35 +126,50 @@ function clearChat() {
 
 function GetTabVessselsName() {
   // Exemple de données : remplacez par votre liste réelle
-  const vesselNames = [
-    'Titanic', 'Queen Mary', 'USS Enterprise', 'Black Pearl',
-    'HMS Victory', 'Santa Maria', 'Endeavour', 'Kon-Tiki',
-    'USS Constitution', 'Bismarck', 'USS Missouri'
-    // … etc.
-  ];
-
-  const tbody = document.getElementById('vessel-tbody');
-  let currentRow = null;
-
-  vesselNames.forEach((name, idx) => {
-    // À chaque multiple de 4, on crée une nouvelle ligne
-    if (idx % 4 === 0) {
-      currentRow = document.createElement('tr');
-      tbody.appendChild(currentRow);
+  ajaxRequest('GET','/php/request.php/vesselname', function(raw){
+        let data;
+    try {
+      data = (typeof raw === 'string') ? JSON.parse(raw) : raw;
+    } catch (e) {
+      console.error('Erreur JSON.parse :', e, raw);
+      return;
     }
-    // On crée la cellule, on lui donne le texte et on l'ajoute à la ligne
-    const td = document.createElement('td');
-    td.textContent = name;
-    currentRow.appendChild(td);
-  });
 
-  // Si la dernière ligne est incomplète (moins de 4), on la complète avec des cellules vides
-  const missing = vesselNames.length % 4;
-  if (missing !== 0) {
-    for (let i = missing; i < 4; i++) {
-      const emptyTd = document.createElement('td');
-      emptyTd.innerHTML = '&nbsp;'; // espace insécable
-      currentRow.appendChild(emptyTd);
+    // 2) On vérifie qu'on a bien un array
+    if (!Array.isArray(data)) {
+      console.error('Format inattendu, attendu un array :', data);
+      return;
     }
-  }
+
+    // 3) On extrait juste les noms
+    let vesselNames = data.map(item => item.vessel_name);
+        if (vesselNames) {
+            const tbody = document.getElementById('vessel-tbody');
+            let currentRow = null;
+
+            vesselNames.forEach((name, idx) => {
+                // À chaque multiple de 4, on crée une nouvelle ligne
+                if (idx % 4 === 0) {
+                currentRow = document.createElement('tr');
+                tbody.appendChild(currentRow);
+                }
+                // On crée la cellule, on lui donne le texte et on l'ajoute à la ligne
+                const td = document.createElement('td');
+                td.textContent = name;
+                currentRow.appendChild(td);
+            });
+
+            // Si la dernière ligne est incomplète (moins de 4), on la complète avec des cellules vides
+            const missing = vesselNames.length % 4;
+            if (missing !== 0) {
+                for (let i = missing; i < 4; i++) {
+                const emptyTd = document.createElement('td');
+                emptyTd.innerHTML = '&nbsp;'; // espace insécable
+                currentRow.appendChild(emptyTd);
+                }
+            }
+        } else {
+            console.error('Réponse inattendue:', responses);
+        }
+    });  
 }
