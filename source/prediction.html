@@ -40,6 +40,7 @@
     <div class="d-flex justify-content-center gap-3 mb-4">
       <button class="btn btn-primary" onclick="predictType()">Prédire le type</button>
       <button class="btn btn-secondary" onclick="predictTrajectoire()">Prédire la trajectoire</button>
+      <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#ajoutPointModal">Ajouter un point</button>
     </div>
 
     <!-- Tableau -->
@@ -63,13 +64,80 @@
             <td>511</td><td>ISLAND QUEEN</td><td>IV</td><td>WDE8611</td><td>0</td><td>30</td><td>13</td><td>3</td><td>31</td>
             <td><input type="radio" name="selectMMSI" value="367387310"></td>
           </tr>
-          <!-- Ajoute les autres lignes de la même manière -->
         </tbody>
       </table>
     </div>
   </div>
 
-  <!-- Scripts Bootstrap + JS perso -->
+  <!-- Modal Ajout Point -->
+  <div class="modal fade" id="ajoutPointModal" tabindex="-1" aria-labelledby="ajoutPointLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <form id="ajoutForm" action="ajout_point.php">
+          <div class="modal-header">
+            <h5 class="modal-title" id="ajoutPointLabel">Ajouter un point de donnée</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+          </div>
+          <div class="modal-body row g-3">
+            <div class="col-md-4">
+              <label class="form-label">MMSI</label>
+              <input type="number" class="form-control" name="mmsi" required>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Horodatage</label>
+              <input type="datetime-local" class="form-control" name="timestamp" required>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Nom du bateau</label>
+              <input type="text" class="form-control" name="vessel_name" required>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Latitude</label>
+              <input type="text" class="form-control" name="lat" required>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Longitude</label>
+              <input type="text" class="form-control" name="lon" required>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Vitesse (SOG)</label>
+              <input type="text" class="form-control" name="sog" required>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Cap (COG)</label>
+              <input type="text" class="form-control" name="cog" required>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Cap réel (Heading)</label>
+              <input type="text" class="form-control" name="heading" required>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">État</label>
+              <input type="text" class="form-control" name="status" required>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Longueur</label>
+              <input type="number" class="form-control" name="length" required>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Largeur</label>
+              <input type="number" class="form-control" name="width" required>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Tirant d'eau</label>
+              <input type="number" class="form-control" name="draft" required>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="submit" class="btn btn-success">Ajouter</button>
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts Bootstrap + JS -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script>
     function getSelectedMMSI() {
@@ -87,7 +155,6 @@
       const mmsi = getSelectedMMSI();
       if (mmsi) {
         console.log("Prédiction du type pour le MMSI :", mmsi);
-        // Ici tu peux ajouter ton appel AJAX ou redirection selon le projet
       }
     }
 
@@ -95,9 +162,87 @@
       const mmsi = getSelectedMMSI();
       if (mmsi) {
         console.log("Prédiction de la trajectoire pour le MMSI :", mmsi);
-        // Pareil ici : appel API, redirection, etc.
       }
     }
   </script>
+  <script>
+  // Fonctions déjà présentes
+  function getSelectedMMSI() {
+    const radios = document.getElementsByName('selectMMSI');
+    for (let radio of radios) {
+      if (radio.checked) {
+        return radio.value;
+      }
+    }
+    alert("Veuillez sélectionner un bateau.");
+    return null;
+  }
+
+  function predictType() {
+    const mmsi = getSelectedMMSI();
+    if (mmsi) {
+      console.log("Prédiction du type pour le MMSI :", mmsi);
+    }
+  }
+
+  function predictTrajectoire() {
+    const mmsi = getSelectedMMSI();
+    if (mmsi) {
+      console.log("Prédiction de la trajectoire pour le MMSI :", mmsi);
+    }
+  }
+
+  // 🚀 Ajout dynamique d'une ligne au tableau
+  document.getElementById('ajoutForm').addEventListener('submit', function (event) {
+    event.preventDefault(); // Empêche le rechargement de la page
+
+    const formData = new FormData(this);
+    const mmsi = formData.get('mmsi');
+    const timestamp = formData.get('timestamp');
+    const lat = formData.get('lat');
+    const lon = formData.get('lon');
+    const sog = formData.get('sog');
+    const cog = formData.get('cog');
+    const heading = formData.get('heading');
+    const name = formData.get('vessel_name');
+    const imo = ''; // vide
+    const callSign = ''; // vide
+    const status = formData.get('status');
+    const length = formData.get('length');
+    const width = formData.get('width');
+    const draft = formData.get('draft');
+    const cargo = ''; // vide
+
+    const tbody = document.querySelector('table tbody');
+    const newRow = document.createElement('tr');
+
+    newRow.innerHTML = `
+      <td>${mmsi}</td>
+      <td>${timestamp}</td>
+      <td>${lat}</td>
+      <td>${lon}</td>
+      <td>${sog}</td>
+      <td>${cog}</td>
+      <td>${heading}</td>
+      <td>${name}</td>
+      <td>${imo}</td>
+      <td>${callSign}</td>
+      <td>${status}</td>
+      <td>${length}</td>
+      <td>${width}</td>
+      <td>${draft}</td>
+      <td>${cargo}</td>
+      <td><input type="radio" name="selectMMSI" value="${mmsi}"></td>
+    `;
+
+    tbody.appendChild(newRow);
+
+    // Fermer la modale et réinitialiser le formulaire
+    const ajoutModal = bootstrap.Modal.getInstance(document.getElementById('ajoutPointModal'));
+    ajoutModal.hide();
+    this.reset();
+  });
+</script>
+
 </body>
 </html>
