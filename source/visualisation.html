@@ -3,13 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Visualisation sur une carte</title>
+  <title>Visualisation sur une carte avec Plotly</title>
 
   <!-- Bootstrap CSS -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-
-  <!-- Leaflet CSS -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <!-- Plotly JS -->
+  <script src="https://cdn.plot.ly/plotly-2.24.1.min.js"></script>
 </head>
 <body>
 
@@ -23,15 +22,9 @@
       </button>
       <div class="collapse navbar-collapse" id="navbarNav">
         <ul class="navbar-nav">
-          <li class="nav-item">
-            <a class="nav-link text-white" href="bootstrap.html">Accueil</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link text-white" href="prediction.html">Prediction</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link text-white" href="visualisation.html">Visualisation</a>
-          </li>
+          <li class="nav-item"><a class="nav-link text-white" href="bootstrap.html">Accueil</a></li>
+          <li class="nav-item"><a class="nav-link text-white" href="prediction.html">Prediction</a></li>
+          <li class="nav-item"><a class="nav-link text-white" href="visualisation.html">Visualisation</a></li>
         </ul>
       </div>
     </div>
@@ -41,10 +34,10 @@
   <div class="container my-4">
     <h2 class="mb-4">Visualisation sur une carte</h2>
 
-    <!-- Carte Leaflet -->
+    <!-- Carte Plotly dans une card Bootstrap -->
     <div class="card border-primary">
       <div class="card-body p-0">
-        <div id="map" class="w-100" style="height: 600px;"></div>
+        <div id="plotly-map" class="w-100" style="height: 600px;"></div>
       </div>
     </div>
 
@@ -58,11 +51,11 @@
       <h2 class="mb-4 text-center">Liste des Vessels</h2>
       <div class="table-responsive">
         <table class="table table-bordered table-striped table-hover text-center align-middle">
-        <thead class="table-dark">
-        </thead>
-        <tbody id="vessel-tbody">
-      </tbody>
-    </table>
+          <thead class="table-dark">
+            <tr><th>Nom du bateau</th></tr>
+          </thead>
+          <tbody id="vessel-tbody"></tbody>
+        </table>
       </div>
     </div>
   </div>
@@ -85,58 +78,9 @@
     </div>
   </div>
 
-  <!-- Bootstrap Bundle JS (modale incluse) -->
+  <!-- Bootstrap Bundle JS -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
-  <!-- Leaflet JS -->
-  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-
-  <!-- JavaScript intégré -->
-  <script>
-    // Initialiser la carte
-    const map = L.map('map').setView([25, -90], 5);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '&copy; OpenStreetMap contributors'
-    }).addTo(map);
-
-    // Exemple d'icône de bateau
-    const bateauIcon = L.icon({
-      iconUrl: 'https://cdn-icons-png.flaticon.com/512/854/854894.png',
-      iconSize: [32, 32],
-      iconAnchor: [16, 16]
-    });
-
-    L.marker([24.5, -89.5], { icon: bateauIcon }).addTo(map).bindPopup('Bateau 1');
-
-    // Fonction pour remplir la table
-    function GetTabVessselsName() {
-      const vesselNames = ["Liberty One", "Ocean Spirit", "Sea Explorer"];
-      const tbody = document.getElementById("vessel-tbody");
-      tbody.innerHTML = "";
-
-      vesselNames.forEach(name => {
-        const tr = document.createElement("tr");
-        const td = document.createElement("td");
-
-        const link = document.createElement("a");
-        link.href = "#";
-        link.className = "text-primary text-decoration-underline";
-        link.textContent = name;
-        link.setAttribute("data-bs-toggle", "modal");
-        link.setAttribute("data-bs-target", "#vesselModal");
-        link.onclick = () => {
-          document.getElementById("vesselNameDisplay").textContent = name;
-          document.getElementById("vesselModalLabel").textContent = `Bateau : ${name}`;
-        };
-
-        td.appendChild(link);
-        tr.appendChild(td);
-        tbody.appendChild(tr);
-      });
-    }
-
-    // Au chargement
-    document.addEventListener('DOMContentLoaded', GetTabVessselsName);
-  </script>
+  
 </body>
 </html>
