@@ -14,7 +14,8 @@ use OpenAI;
  */
 function handleChat(PDO $pdo, string $prompt) {
 
-
+    // Définition de la clé API OpenAI (à sécuriser dans une variable d'environnement en production)
+  
     
 
     // Génération de la description du schéma de la base
@@ -65,7 +66,7 @@ function handleChat(PDO $pdo, string $prompt) {
             ['role' => 'user',   'content' => $prompt]
         ],
         'functions'     => $functions,
-        'function_call' => ['name' => 'query_database']
+        'function_call' => 'auto'
     ]);
 
     $choice = $response['choices'][0] ?? null;

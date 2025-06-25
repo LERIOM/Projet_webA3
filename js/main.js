@@ -87,6 +87,7 @@ function getPredictTrajectory( cog, sog, lat, lon, delta, heading,length, draft)
  * @param {string} promptText - Le texte saisi par l'utilisateur.
  */
 function sendChat(promptText) {
+  clearPrompt();
   appendMessage(promptText, 'user');
   fetch('/php/request.php/chat', {
     method: 'POST',
@@ -100,6 +101,15 @@ function sendChat(promptText) {
   .catch(error => {
     console.error('Erreur chat API:', error);
   });
+}
+/**
+ * Vide le champ de saisie du prompt.
+ */
+function clearPrompt() {
+    const promptEl = document.getElementById('prompt');
+    if (promptEl) {
+        promptEl.value = '';
+    }
 }
 
 /**
@@ -216,10 +226,11 @@ function getTabByName(name) {
                 tr.innerHTML = `
                     <td>${item.base_date_time}</td>
                     <td>${item.status_description}</td>
-                    <td>${item.cog}</td>
-                    <td>${item.sog}</td>
                     <td>${item.lat}</td>
                     <td>${item.lon}</td>
+                    <td>${item.cog}</td>
+                    <td>${item.sog}</td>
+                    
                    <td>${item.heading}</td>
                 `;
                 tbody.appendChild(tr);

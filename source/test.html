@@ -1,33 +1,71 @@
 <!DOCTYPE html>
 <html lang="fr">
- <head>
- <meta charset="utf-8">
- <title> index </title>
- <link
+<head>
+  <meta charset="utf-8">
+  <title>Mon site AIS</title>
+  <link
     href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
     rel="stylesheet">
- </head>
- <body>
-  <div id="chat">
-    <div id="messages" style="border:1px solid #ccc; height:300px; overflow-y:auto; padding:10px; margin-bottom:10px;"></div>
-    <input type="text" id="prompt" placeholder="Pose ta question…" style="width:80%; padding:5px;">
-    <button id="send">Envoyer</button>
-  </div>
-  <div class="container py-4">
-  <h2 class="mb-4 text-center">Liste des Vessels</h2>
-  <div class="table-responsive">
-    <table class="table table-bordered table-striped table-hover text-center align-middle">
-      <thead class="table-dark">
-        
-      </thead>
-      <tbody id="vessel-tbody">
-        <!-- Les lignes seront insérées par JS -->
-      </tbody>
-    </table>
-  </div>
-</div>
-
+  <script src="/js/ajax.js"></script>
   <script src="/js/main.js"></script>
+</head>
+<body>
+  <!-- Navbar Bootstrap -->
+  <nav class="navbar navbar-expand-lg navbar-light bg-primary">
+    <div class="container-fluid">
+      <a class="navbar-brand text-white" href="#">Mon site</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+        aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav">
+          <li class="nav-item"><a class="nav-link text-white" href="bootstrap.html">Accueil</a></li>
+          <li class="nav-item"><a class="nav-link text-white" href="prediction.html">Prediction</a></li>
+          <li class="nav-item"><a class="nav-link text-white" href="visualisation.html">Visualisation</a></li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container my-4">
+    <!-- Chatbot Card -->
+    <div class="card mb-4">
+      <div class="card-header bg-primary text-white">
+        Chatbot AIS
+      </div>
+      <div class="card-body">
+        <div id="messages" class="border rounded p-3 mb-3" style="height:300px; overflow-y:auto;"></div>
+        <div class="input-group">
+          <input type="text" id="prompt" class="form-control" placeholder="Pose ta question…">
+          <button id="send" class="btn btn-primary">Envoyer</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Vessels List Card -->
+    <div class="card">
+      <div class="card-header bg-secondary text-white">
+        Liste des Vessels
+      </div>
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table table-bordered table-striped table-hover text-center align-middle mb-0">
+            <thead class="table-dark">
+              <!-- En-têtes dynamiques / laissées vides -->
+            </thead>
+            <tbody id="vessel-tbody">
+              <!-- Les lignes seront insérées par JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bootstrap JS Bundle -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
   <script>
     document.getElementById('send').addEventListener('click', function() {
       sendChat(document.getElementById('prompt').value);
@@ -36,40 +74,4 @@
       if (e.key === 'Enter') sendChat(this.value);
     });
   </script>
-  <script>
-  // Exemple de données : remplacez par votre liste réelle
-  const vesselNames = [
-    'Titanic', 'Queen Mary', 'USS Enterprise', 'Black Pearl',
-    'HMS Victory', 'Santa Maria', 'Endeavour', 'Kon-Tiki',
-    'USS Constitution', 'Bismarck', 'USS Missouri'
-    // … etc.
-  ];
-
-  const tbody = document.getElementById('vessel-tbody');
-  let currentRow = null;
-
-  vesselNames.forEach((name, idx) => {
-    // À chaque multiple de 4, on crée une nouvelle ligne
-    if (idx % 4 === 0) {
-      currentRow = document.createElement('tr');
-      tbody.appendChild(currentRow);
-    }
-    // On crée la cellule, on lui donne le texte et on l'ajoute à la ligne
-    const td = document.createElement('td');
-    td.textContent = name;
-    currentRow.appendChild(td);
-  });
-
-  // Si la dernière ligne n'est pas complète, on ajoute des cellules vides
-  const missing = vesselNames.length % 4;
-  if (missing !== 0) {
-    for (let i = missing; i < 4; i++) {
-      const emptyTd = document.createElement('td');
-      emptyTd.innerHTML = '&nbsp;'; // Pour afficher un espace vide
-      currentRow.appendChild(emptyTd);
-    }
-  }
-</script>
-
- </body>
 </html>
