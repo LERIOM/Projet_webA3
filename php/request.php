@@ -81,6 +81,11 @@ $router->POST('/chat', [], function() {
     handleChat($pdo, $prompt);
 });
 
+$router->GET('/vesselname', [], function() {
+  global $pdo;
+  GetTabVessselsName($pdo);
+});
+
 $router->run();
 
 ?>

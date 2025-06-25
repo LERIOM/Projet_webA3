@@ -122,39 +122,72 @@ function clearChat() {
         messagesEl.innerHTML = '';
     }
 }
-
-
 function GetTabVessselsName() {
-  // Exemple de données : remplacez par votre liste réelle
-  const vesselNames = [
-    'Titanic', 'Queen Mary', 'USS Enterprise', 'Black Pearl',
-    'HMS Victory', 'Santa Maria', 'Endeavour', 'Kon-Tiki',
-    'USS Constitution', 'Bismarck', 'USS Missouri'
-    // … etc.
-  ];
-
-  const tbody = document.getElementById('vessel-tbody');
-  let currentRow = null;
-
-  vesselNames.forEach((name, idx) => {
-    // À chaque multiple de 4, on crée une nouvelle ligne
-    if (idx % 4 === 0) {
-      currentRow = document.createElement('tr');
-      tbody.appendChild(currentRow);
+  ajaxRequest('GET', '/php/request.php/vesselname', function(raw) {
+    // 1) JSON.parse si nécessaire
+    let data;
+    try {
+      data = (typeof raw === 'string') ? JSON.parse(raw) : raw;
+    } catch (e) {
+      console.error('Erreur JSON.parse :', e, raw);
+      return;
     }
-    // On crée la cellule, on lui donne le texte et on l'ajoute à la ligne
-    const td = document.createElement('td');
-    td.textContent = name;
-    currentRow.appendChild(td);
+
+    // 2) on s'assure d'avoir bien un array d'objets
+    if (!Array.isArray(data)) {
+      console.error('Format inattendu, attendu un array :', data);
+      return;
+    }
+
+    // 3) on extrait juste les noms
+    let vesselNames = data.map(item => item.vessel_name);
+
+    // 4) padding pour que count % 4 === 0
+    const reste = vesselNames.length % 4;
+    if (reste !== 0) {
+      for (let i = 0; i < 4 - reste; i++) {
+        vesselNames.push('');  // cellules vides
+      }
+    }
+
+    // 5) build du tableau
+    const tbody = document.getElementById('vessel-tbody');
+    tbody.innerHTML = '';
+
+    for (let i = 0; i < vesselNames.length; i += 4) {
+      const tr = document.createElement('tr');
+
+      for (let j = 0; j < 4; j++) {
+        const name = vesselNames[i + j];
+        const td = document.createElement('td');
+
+        if (name) {
+          // Création du lien cliquable pour ouvrir le modal
+          const link = document.createElement('a');
+          link.href = '#';
+          link.className = 'text-primary text-decoration-underline';
+          link.textContent = name;
+          link.setAttribute('data-bs-toggle', 'modal');
+          link.setAttribute('data-bs-target', '#vesselModal');
+          link.addEventListener('click', () => {
+            document.getElementById('vesselNameDisplay').textContent = name;
+            document.getElementById('vesselModalLabel')
+                    .textContent = `Bateau : ${name}`;
+          });
+
+          td.appendChild(link);
+        } else {
+          // cellule de remplissage
+          td.innerHTML = '&nbsp;';
+        }
+
+        tr.appendChild(td);
+      }
+
+      tbody.appendChild(tr);
+    }
   });
-
-  // Si la dernière ligne est incomplète (moins de 4), on la complète avec des cellules vides
-  const missing = vesselNames.length % 4;
-  if (missing !== 0) {
-    for (let i = missing; i < 4; i++) {
-      const emptyTd = document.createElement('td');
-      emptyTd.innerHTML = '&nbsp;'; // espace insécable
-      currentRow.appendChild(emptyTd);
-    }
-  }
 }
+
+// Et on déclenche au chargement
+document.addEventListener('DOMContentLoaded', GetTabVessselsName);
