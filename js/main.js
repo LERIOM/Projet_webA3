@@ -87,6 +87,7 @@ function getPredictTrajectory( cog, sog, lat, lon, delta, heading,length, draft)
  * @param {string} promptText - Le texte saisi par l'utilisateur.
  */
 function sendChat(promptText) {
+  clearPrompt();
   appendMessage(promptText, 'user');
   fetch('/php/request.php/chat', {
     method: 'POST',
@@ -100,6 +101,15 @@ function sendChat(promptText) {
   .catch(error => {
     console.error('Erreur chat API:', error);
   });
+}
+/**
+ * Vide le champ de saisie du prompt.
+ */
+function clearPrompt() {
+    const promptEl = document.getElementById('prompt');
+    if (promptEl) {
+        promptEl.value = '';
+    }
 }
 
 /**
@@ -173,6 +183,7 @@ function GetTabVessselsName() {
             document.getElementById('vesselNameDisplay').textContent = name;
             document.getElementById('vesselModalLabel')
                     .textContent = `Bateau : ${name}`;
+            getInfoByName(name);
           });
 
           td.appendChild(link);
@@ -189,5 +200,43 @@ function GetTabVessselsName() {
   });
 }
 
-// Et on déclenche au chargement
-document.addEventListener('DOMContentLoaded', GetTabVessselsName);
+
+function getInfoByName(name){
+    getTabByName(name);
+    ajaxRequest('GET', '/php/request.php/vesselInfo?name=' + encodeURIComponent(name), function(raw) {
+        const response = raw[0];
+        if (!response.error) {
+            const infoDiv = document.getElementById('vesselNameDisplay');
+            infoDiv.innerHTML = `
+                <p><strong>MMSI:</strong> ${response.mmsi} <strong>IMO:</strong> ${response.imo} <strong>Type:</strong> ${response.type} <strong>Longueur:</strong> ${response.length} m <strong>Tirant d'eau:</strong> ${response.draft} m</p>
+            `;
+        } else {
+            console.error('Erreur lors de la récupération des infos du bateau:', response);
+        }
+    });
+}
+
+function getTabByName(name) {
+    ajaxRequest('GET', '/php/request.php/positionTab?name=' + encodeURIComponent(name), function(raw) {
+        const tbody = document.getElementById('vesselModalTbody');
+        tbody.innerHTML = ''; // Réinitialiser le contenu
+        if (Array.isArray(raw) && raw.length > 0) {
+            raw.forEach(item => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${item.base_date_time}</td>
+                    <td>${item.status_description}</td>
+                    <td>${item.lat}</td>
+                    <td>${item.lon}</td>
+                    <td>${item.cog}</td>
+                    <td>${item.sog}</td>
+                    
+                   <td>${item.heading}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        } else {
+            tbody.innerHTML = '<tr><td colspan="5">Aucune donnée disponible</td></tr>';
+        }
+    });
+}

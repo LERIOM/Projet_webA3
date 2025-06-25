@@ -86,6 +86,17 @@ $router->GET('/vesselname', [], function() {
   GetTabVessselsName($pdo);
 });
 
+$router->GET('/vesselInfo', ["name"], function($name) {
+    global $pdo;
+    getInfoByName($pdo, $name);
+});
+
+$router->GET('/positionTab', ["name"], function($name) {
+    global $pdo;
+    getPositionTab($pdo, $name);
+});
+
+
 $router->run();
 
 ?>
