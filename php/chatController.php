@@ -1,5 +1,6 @@
-
 <?php
+// Démarrage de la session pour l'historique de chat
+session_start();
 // Contrôleur pour gérer les requêtes du chatbot OpenAIke fkre fkf ekf ek erfke e
 require __DIR__ . '/../vendor/autoload.php';
 use OpenAI;
@@ -15,7 +16,7 @@ use OpenAI;
 function handleChat(PDO $pdo, string $prompt) {
 
     // Définition de la clé API OpenAI (à sécuriser dans une variable d'environnement en production)
-  
+   $openai = OpenAI::client('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');
 
     
 
@@ -40,6 +41,16 @@ function handleChat(PDO $pdo, string $prompt) {
         $schemaDesc .= "\n- {$tableName} : " . implode(', ', $colList) . ";";
     }
 
+    // Initialisation de l'historique de chat
+    if (!isset($_SESSION['chat_history'])) {
+        $_SESSION['chat_history'] = [
+            ['role'=>'system','content'=>'Tu es un assistant SQL pour la base de données AIS.'],
+            ['role'=>'system','content'=>$schemaDesc]
+        ];
+    }
+    // Ajout du prompt utilisateur
+    $_SESSION['chat_history'][] = ['role'=>'user','content'=>$prompt];
+
     // Définition de la fonction pour le function calling
     $functions = [
         [
@@ -61,13 +72,9 @@ function handleChat(PDO $pdo, string $prompt) {
     // Appel à l'API Chat Completions avec function_call
     $response = $openai->chat()->create([
         'model'         => 'gpt-4o-mini',
-        'messages'      => [
-            ['role' => 'system', 'content' => 'Tu es un assistant SQL pour la base de données AIS.'],
-            ['role' => 'system', 'content' => $schemaDesc],
-            ['role' => 'user',   'content' => $prompt]
-        ],
+        'messages'      => $_SESSION['chat_history'],
         'functions'     => $functions,
-        'function_call' => 'auto'
+        'function_call' => 'auto',
     ]);
 
     $choice = $response['choices'][0] ?? null;
@@ -95,6 +102,9 @@ function handleChat(PDO $pdo, string $prompt) {
         // Fallback si pas de function_call
         $answer = $choice['message']['content'] ?? 'Désolé, je n’ai pas compris.';
     }
+
+    // Ajout de la réponse du bot à l'historique
+    $_SESSION['chat_history'][] = ['role'=>'assistant','content'=>$answer];
 
     // Envoi de la réponse JSON au client
     header('Content-Type: application/json; charset=utf-8');
