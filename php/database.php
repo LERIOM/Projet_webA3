@@ -235,4 +235,30 @@ function getPredictTrajectory(
         return Response::HTTP404(['message' => 'No vessel names found']);
     }
  }
+
+ function getInfoByName($pdo, $name) {
+    $query = $pdo->prepare(
+        'SELECT b.*, 
+                p.base_date_time, p.lat, p.lon, p.sog, p.cog, p.heading,
+                ns.description AS status_description
+         FROM boat AS b
+         LEFT JOIN LATERAL (
+             SELECT * FROM position AS p2
+             WHERE p2.mmsi = b.mmsi
+             ORDER BY p2.base_date_time DESC
+             LIMIT 1
+         ) AS p ON true
+         LEFT JOIN navigation_status AS ns ON ns.id_status = p.id_status
+         WHERE b.vessel_name = :name'
+    );
+    $query->bindParam(':name', $name);
+    $query->execute();
+    $result = $query->fetchAll(PDO::FETCH_ASSOC);
+    
+    if (!empty($result)) {
+        return Response::HTTP200($result);
+    } else {
+        return Response::HTTP404(['message' => 'No vessel found with the given name']);
+    }
+ }
 ?> 

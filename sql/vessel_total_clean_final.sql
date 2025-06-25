@@ -105,6 +105,27 @@ FROM vessel_total_stage
 WHERE status IS NOT NULL
 ORDER BY status;
 
+UPDATE navigation_status
+SET description = CASE id_status
+    WHEN 0  THEN 'Under way using engine'
+    WHEN 1  THEN 'At anchor'
+    WHEN 2  THEN 'Not under command'
+    WHEN 3  THEN 'Restricted manoeuverability'
+    WHEN 4  THEN 'Constrained by her draught'
+    WHEN 5  THEN 'Moored'
+    WHEN 6  THEN 'Aground'
+    WHEN 7  THEN 'Engaged in Fishing'
+    WHEN 8  THEN 'Under way sailing'
+    WHEN 9  THEN 'Reserved for future amendment of Navigational Status for HSC'
+    WHEN 10 THEN 'Reserved for future amendment of Navigational Status for WIG'
+    WHEN 11 THEN 'Reserved for future use'
+    WHEN 12 THEN 'Reserved for future use'
+    WHEN 13 THEN 'Reserved for future use'
+    WHEN 14 THEN 'AIS-SART is active'
+    WHEN 15 THEN 'Not defined (default)'
+END
+WHERE id_status BETWEEN 0 AND 15;
+
 /* 3.3 — POSITION : une ligne par observation, sans le cluster */
 INSERT INTO position (base_date_time, lat, lon, sog, cog, heading,
                       id_status, mmsi)

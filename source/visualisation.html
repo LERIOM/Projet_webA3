@@ -12,8 +12,8 @@
 
   <!-- Leaflet CSS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-   <script src="/js/ajax.js"></script>
-  <script src="/js/main.js"></script>
+    <script src="/js/ajax.js"></script>
+    <script src="/js/main.js"></script>
 
 </head>
 <body>
@@ -57,9 +57,6 @@
       <h2 class="mb-4 text-center">Liste des Vessels</h2>
       <div class="table-responsive">
         <table class="table table-bordered table-striped table-hover text-center align-middle">
-          <thead class="table-dark">
-            <tr><th>Nom du bateau</th></tr>
-          </thead>
           <tbody id="vessel-tbody"></tbody>
         </table>
       </div>
@@ -68,7 +65,7 @@
 
   <!-- Modale -->
   <div class="modal fade" id="vesselModal" tabindex="-1" aria-labelledby="vesselModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-dialog modal-dialog-centered modal-xl">
       <div class="modal-content">
         <div class="modal-header">
           <h5 class="modal-title" id="vesselModalLabel">Nom du bateau</h5>
@@ -76,6 +73,26 @@
         </div>
         <div class="modal-body">
           <p id="vesselNameDisplay" class="fs-5 text-center"></p>
+           <div class="table-responsive" style="max-height: 300px; overflow-y: auto;">  
+          <table class="table">
+            <thead>
+              <tr>
+                <th scope="col">#</th>
+                <th scope="col">First</th>
+                <th scope="col">Last</th>
+                <th scope="col">Handle</th>
+              </tr>
+            </thead>
+            <tbody id="vesselModalTbody">
+              <tr>
+                <th scope="row">1</th>
+                <td>Mark</td>
+                <td>Otto</td>
+                <td>@mdo</td>
+              </tr>
+            </tbody>
+          </table>
+          </div>
         </div>
         <div class="modal-footer">
           <button class="btn btn-success">Ajouter le bateau</button>

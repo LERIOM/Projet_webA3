@@ -173,6 +173,7 @@ function GetTabVessselsName() {
             document.getElementById('vesselNameDisplay').textContent = name;
             document.getElementById('vesselModalLabel')
                     .textContent = `Bateau : ${name}`;
+            getInfoByName(name);
           });
 
           td.appendChild(link);
@@ -189,5 +190,42 @@ function GetTabVessselsName() {
   });
 }
 
-// Et on déclenche au chargement
-document.addEventListener('DOMContentLoaded', GetTabVessselsName);
+
+function getInfoByName(name){
+    getTabByName(name);
+    ajaxRequest('GET', '/php/request.php/vesselInfo?name=' + encodeURIComponent(name), function(raw) {
+        const response = raw[0];
+        if (!response.error) {
+            const infoDiv = document.getElementById('vesselNameDisplay');
+            infoDiv.innerHTML = `
+                <p><strong>MMSI:</strong> ${response.mmsi} <strong>IMO:</strong> ${response.imo} <strong>Type:</strong> ${response.type} <strong>Longueur:</strong> ${response.length} m <strong>Tirant d'eau:</strong> ${response.draft} m</p>
+            `;
+        } else {
+            console.error('Erreur lors de la récupération des infos du bateau:', response);
+        }
+    });
+}
+
+function getTabByName(name) {
+    ajaxRequest('GET', '/php/request.php/vesselTab?name=' + encodeURIComponent(name), function(raw) {
+        const tbody = document.getElementById('vesselModalTbody');
+        tbody.innerHTML = ''; // Réinitialiser le contenu
+        if (Array.isArray(raw) && raw.length > 0) {
+            raw.forEach(item => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${item.date}</td>
+                    <td>${item.status}</td>
+                    <td>${item.cog}</td>
+                    <td>${item.sog}</td>
+                    <td>${item.lat}</td>
+                    <td>${item.lon}</td>
+                   <td>${item.heading}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        } else {
+            tbody.innerHTML = '<tr><td colspan="5">Aucune donnée disponible</td></tr>';
+        }
+    });
+}
