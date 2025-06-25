@@ -111,33 +111,6 @@
 
     L.marker([24.5, -89.5], { icon: bateauIcon }).addTo(map).bindPopup('Bateau 1');
 
-    // Fonction pour remplir la table
-    function GetTabVessselsName() {
-      const vesselNames = ["Liberty One", "Ocean Spirit", "Sea Explorer"];
-      const tbody = document.getElementById("vessel-tbody");
-      tbody.innerHTML = "";
-
-      vesselNames.forEach(name => {
-        const tr = document.createElement("tr");
-        const td = document.createElement("td");
-
-        const link = document.createElement("a");
-        link.href = "#";
-        link.className = "text-primary text-decoration-underline";
-        link.textContent = name;
-        link.setAttribute("data-bs-toggle", "modal");
-        link.setAttribute("data-bs-target", "#vesselModal");
-        link.onclick = () => {
-          document.getElementById("vesselNameDisplay").textContent = name;
-          document.getElementById("vesselModalLabel").textContent = `Bateau : ${name}`;
-        };
-
-        td.appendChild(link);
-        tr.appendChild(td);
-        tbody.appendChild(tr);
-      });
-    }
-
     // Au chargement
     document.addEventListener('DOMContentLoaded', GetTabVessselsName);
   </script>
