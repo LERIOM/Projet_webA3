@@ -96,11 +96,19 @@ function sendChat(promptText) {
   })
   .then(response => response.json())
   .then(data => {
+  let parsed;
+  try {
+    parsed = JSON.parse(data.answer);
+  } catch {
+    parsed = null;
+  }
+
+  if (Array.isArray(parsed) && parsed.every(item => typeof item === 'object')) {
+    renderTable(parsed);
+  } else {
     appendMessage(data.answer, 'bot');
-  })
-  .catch(error => {
-    console.error('Erreur chat API:', error);
-  });
+  }
+})
 }
 /**
  * Vide le champ de saisie du prompt.
@@ -216,6 +224,7 @@ function getInfoByName(name){
     });
 }
 
+
 function getTabByName(name) {
     ajaxRequest('GET', '/php/request.php/positionTab?name=' + encodeURIComponent(name), function(raw) {
         const tbody = document.getElementById('vesselModalTbody');
@@ -239,4 +248,54 @@ function getTabByName(name) {
             tbody.innerHTML = '<tr><td colspan="5">Aucune donnée disponible</td></tr>';
         }
     });
+}
+
+/**
+ * Génère et affiche un tableau pour un array d'objets.
+ * @param {Array<Object>} rows
+ */
+function renderTable(rows) {
+    const messagesEl = document.getElementById('messages');
+    // Crée la table et ses éléments
+    const table = document.createElement('table');
+    table.style.width = '100%';
+    table.style.borderCollapse = 'collapse';
+    table.style.margin = '10px 0';
+
+    // En-têtes dynamiques
+    const thead = document.createElement('thead');
+    const headerRow = document.createElement('tr');
+    const cols = Object.keys(rows[0]);
+    cols.forEach(col => {
+        const th = document.createElement('th');
+        th.textContent = col;
+        th.style.border = '1px solid #ccc';
+        th.style.padding = '4px';
+        th.style.background = '#f0f0f0';
+        headerRow.appendChild(th);
+    });
+    thead.appendChild(headerRow);
+    table.appendChild(thead);
+
+    // Corps du tableau
+    const tbody = document.createElement('tbody');
+    rows.forEach(obj => {
+        const tr = document.createElement('tr');
+        cols.forEach(col => {
+            const td = document.createElement('td');
+            td.textContent = obj[col] ?? '';
+            td.style.border = '1px solid #ccc';
+            td.style.padding = '4px';
+            tr.appendChild(td);
+        });
+        tbody.appendChild(tr);
+    });
+    table.appendChild(tbody);
+
+    // Wrapper pour conserver le style "bot"
+    const wrapper = document.createElement('div');
+    wrapper.className = 'msg bot';
+    wrapper.appendChild(table);
+    messagesEl.appendChild(wrapper);
+    messagesEl.scrollTop = messagesEl.scrollHeight;
 }
