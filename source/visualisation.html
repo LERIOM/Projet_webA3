@@ -98,21 +98,6 @@
 
   <!-- JavaScript intégré -->
   <script>
-    // Initialiser la carte
-    const map = L.map('map').setView([25, -90], 5);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '&copy; OpenStreetMap contributors'
-    }).addTo(map);
-
-    // Exemple d'icône de bateau
-    const bateauIcon = L.icon({
-      iconUrl: 'https://cdn-icons-png.flaticon.com/512/854/854894.png',
-      iconSize: [32, 32],
-      iconAnchor: [16, 16]
-    });
-
-    L.marker([24.5, -89.5], { icon: bateauIcon }).addTo(map).bindPopup('Bateau 1');
-
     // Au chargement
     document.addEventListener('DOMContentLoaded', GetTabVessselsName);
   </script>
