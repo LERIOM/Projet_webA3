@@ -207,15 +207,15 @@ function getInfoByName(name){
 }
 
 function getTabByName(name) {
-    ajaxRequest('GET', '/php/request.php/vesselTab?name=' + encodeURIComponent(name), function(raw) {
+    ajaxRequest('GET', '/php/request.php/positionTab?name=' + encodeURIComponent(name), function(raw) {
         const tbody = document.getElementById('vesselModalTbody');
         tbody.innerHTML = ''; // Réinitialiser le contenu
         if (Array.isArray(raw) && raw.length > 0) {
             raw.forEach(item => {
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
-                    <td>${item.date}</td>
-                    <td>${item.status}</td>
+                    <td>${item.base_date_time}</td>
+                    <td>${item.status_description}</td>
                     <td>${item.cog}</td>
                     <td>${item.sog}</td>
                     <td>${item.lat}</td>
