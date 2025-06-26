@@ -240,7 +240,7 @@ function getTabByName(name) {
                     <td>${item.cog}</td>
                     <td>${item.sog}</td>
                    <td>${item.heading}</td>
-                   <td><input type="radio" name="selectMMSI" value="${item.id_position}" onclick="console.log(item.id_position)"></td>`;
+                   <td><input type="radio" name="selectMMSI" value="${item.id_position}" onclick="console.log(${item.id_position})"></td>`;
                 tbody.appendChild(tr);
             });
         } else {
