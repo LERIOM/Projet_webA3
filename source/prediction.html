@@ -46,28 +46,48 @@
     </div>
 
     <!-- Tableau -->
-    <div class="table-responsive">
-      <table class="table table-striped table-bordered table-hover text-center">
-        <thead class="table-dark">
-          <tr>
-            <th># MMSI</th><th>BaseDateTime</th><th>LAT</th><th>LON</th><th>SOG</th><th>COG</th>
-            <th>Heading</th><th>VesselName</th><th>IMO</th><th>CallSign</th><th>Status</th>
-            <th>Length</th><th>Width</th><th>Draft</th><th>Cargo</th><th>Sélection</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>368713000</td><td>2023-05-29 00:00:00</td><td>29.97675</td><td>-89.9285</td><td>13.4</td><td>227.8</td>
-            <td>227</td><td>STOLT LOTUS</td><td>IMO6817648</td><td>DAWB5</td><td>0</td><td>183</td><td>28</td><td>10</td><td>83</td>
-            <td><input type="radio" name="selectMMSI" value="368713000"></td>
-          </tr>
-          <tr>
-            <td>367387310</td><td>2023-05-29 00:00:00</td><td>29.97693</td><td>-89.9295</td><td>1.6</td><td>176.6</td>
-            <td>511</td><td>ISLAND QUEEN</td><td>IV</td><td>WDE8611</td><td>0</td><td>30</td><td>13</td><td>3</td><td>31</td>
-            <td><input type="radio" name="selectMMSI" value="367387310"></td>
-          </tr>
-        </tbody>
-      </table>
+    <div class="container py-4">
+      <h2 class="mb-4 text-center">Liste des Vessels</h2>
+      <div class="table-responsive">
+        <table class="table table-bordered table-striped table-hover text-center align-middle">
+          <tbody id="vessel-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal pour afficher les détails du bateau -->
+    <div class="modal fade" id="vesselModal" tabindex="-1" aria-labelledby="vesselModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-xl">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="vesselModalLabel">Nom du bateau</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+        </div>
+        <div class="modal-body">
+          <p id="vesselNameDisplay" class="fs-5 text-center"></p>
+           <div class="table-responsive" style="max-height: 500px; overflow-y: auto;">  
+          <table class="table">
+            <thead>
+              <tr>
+                <th scope="col">Date</th>
+                <th scope="col">Status</th>
+                <th scope="col">COG</th>
+                <th scope="col">SOG</th>
+                <th scope="col">Lat</th>
+                <th scope="col">Lon</th>
+                <th scope="col">Heading</th>
+              </tr>
+            </thead>
+            <tbody id="vesselModalTbody">
+            </tbody>
+          </table>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-success">Ajouter le bateau</button>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -144,6 +164,8 @@
   <script>
   // Ajout dynamique d'une ligne au tableau
   document.getElementById('ajoutForm').addEventListener('submit', putNewBoat);
+    // Au chargement
+  document.addEventListener('DOMContentLoaded', GetTabVessselsName);
 </script>
 
 </body>

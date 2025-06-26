@@ -268,6 +268,7 @@ function getPredictTrajectory(
 function getPositionTab($pdo, $name) {
     $query = $pdo->prepare(
         'SELECT 
+            p.id_position,
             p.base_date_time,
             p.lat,
             p.lon,
