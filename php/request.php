@@ -51,33 +51,16 @@ $router->GET('/predictCluster', ["cog", "sog", "lat", "lon"], function($cog, $so
   getredictCluster($pdo, $cog, $sog, $lat, $lon);
 });
 
-$router->GET(
-    '/predictTrajectory',
-    ["cog", "sog", "lat", "lon", "delta", "heading", "length", "draft"],
-    function (
-        $cog,
-        $sog,
-        $lat,
-        $lon,
-        $delta,
-        $heading,
-        $length,
-        $draft
-    ) {
-        global $pdo;
-        getPredictTrajectory(
-            $pdo,
-            $cog,
-            $sog,
-            $lat,
-            $lon,
-            $delta,
-            $heading,
-            $length,
-            $draft
-        );
+$router->GET( '/predictTrajectory',["id_position"], function ( $id_position) {
+  global $pdo;
+        getPredictTrajectory( $pdo, $id_position);
     }
 );
+
+$router->GET('/predictType', ["mmsi"], function($mmsi) {
+    global $pdo;
+    getPredictType($pdo, $mmsi);
+});
 
 
 
@@ -105,3 +88,4 @@ $router->GET('/positionTab', ["name"], function($name) {
 
 
 $router->run();
+

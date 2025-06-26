@@ -188,16 +188,30 @@ function getredictCluster($pdo, $cog, $sog, $lat, $lon) {
 
 function getPredictTrajectory(
     PDO $pdo,
-    $cog,
-    $sog,
-    $lat,
-    $lon,
-    $delta,
-    $heading,
-    $length,
-    $draft
+    $id_position
 ) {
-    // 1) Construire la ligne de commande avec options nommées
+    // 1) Récupérer les données de la position
+    $query = $pdo->prepare(
+        'SELECT p.lat, p.lon, p.sog, p.cog, p.heading, 
+                b.length, b.draft
+         FROM position AS p
+         JOIN boat AS b ON p.mmsi = b.mmsi
+         WHERE p.id_position = :id_position'
+    );
+    $query->bindParam(':id_position', $id_position);
+    $query->execute();
+    $position = $query->fetch(PDO::FETCH_ASSOC);
+    if (!$position) {
+        return Response::HTTP404(['message' => 'Position not found']);
+    }
+    $lat = $position['lat'];
+    $lon = $position['lon'];
+    $sog = $position['sog'];
+    $cog = $position['cog'];
+    $heading = $position['heading'];
+    $length = $position['length'];
+    $draft = $position['draft'];        
+    $delta = 600; 
     $cmd = sprintf(
         'python3 /var/www/html/Projet_webA3/python/maintraj.py ' .
         '--lat %s --lon %s --sog %s --cog %s --heading %s --length %s --draft %s --delta_seconds %s 2>&1',
@@ -224,12 +238,57 @@ function getPredictTrajectory(
   }
 }
 
+
+function getPredictType(PDO $pdo, $mmsi) {
+    // 1) Récupérer les dernières données de la position pour ce MMSI
+    $query = $pdo->prepare(
+        'SELECT p.sog, p.cog, p.heading, b.length, b.width, b.draft
+         FROM position AS p
+         JOIN boat AS b ON p.mmsi = b.mmsi
+         WHERE p.mmsi = :mmsi
+         ORDER BY p.id_position DESC
+         LIMIT 1'
+    );
+    $query->bindParam(':mmsi', $mmsi);
+    $query->execute();
+    $position = $query->fetch(PDO::FETCH_ASSOC);
+
+    if (!$position) {
+        return Response::HTTP404(['message' => 'Position not found']);
+    }
+
+    // 2) Exécuter le script de prédiction de type
+    $cmd = sprintf(
+        'python3 /var/www/html/Projet_webA3/python/predict_vessel.py ' .
+        '--sog %s --cog %s --heading %s --length %s --width %s --draft %s 2>&1',
+        escapeshellarg($position['sog']),
+        escapeshellarg($position['cog']),
+        escapeshellarg($position['heading']),
+        escapeshellarg($position['length']),
+        escapeshellarg($position['width']),
+        escapeshellarg($position['draft'])
+    );
+    $output = shell_exec($cmd);
+
+    echo $output; // Pour le débogage, à retirer en production
+
+     // 3) Décoder le JSON renvoyé par le script
+    $decoded = json_decode($output, true);
+    if (isset($decoded['type'])) {
+        return Response::HTTP200(['predicted_type' => $decoded['type']]);
+    } else {
+        return Response::HTTP404(['message' => 'prediction error']);
+    }
+}
+
  function GetTabVesselsName($pdo){
     $query = $pdo->prepare(
         'SELECT DISTINCT vessel_name FROM boat ORDER BY vessel_name'
     );
     $query->execute();
     $result = $query->fetchAll(PDO::FETCH_ASSOC);
+    
+    
     
     if (!empty($result)) {
         return Response::HTTP200($result);

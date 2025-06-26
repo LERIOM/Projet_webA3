@@ -1,10 +1,13 @@
 import argparse
 import joblib
-import numpy as np
-import os
+import pandas as pd
+import json
+import os   
 
 # Charger le modèle entraîné
-model = joblib.load("model_vessel_type_logistic.pkl")
+script_dir = os.path.dirname(os.path.abspath(__file__))
+model_path = os.path.join(script_dir, "model_vessel_type_logistic.pkl")
+model = joblib.load(model_path)
 
 # Définir les arguments de la ligne de commande
 parser = argparse.ArgumentParser(description="Prédire le type de navire")
@@ -18,10 +21,20 @@ parser.add_argument('--draft', type=float, required=True, help="Draft of the ves
 args = parser.parse_args()
 
 # Créer un tableau numpy avec les valeurs d'entrée
-input_data = np.array([[args.sog, args.cog, args.heading, args.length, args.width, args.draft]])
+input_df = pd.DataFrame(
+    [[args.sog, args.cog, args.heading, args.length, args.width, args.draft]],
+    columns=['sog', 'cog', 'heading', 'length', 'width', 'draft']
+)
 
 # Faire la prédiction
-predicted_class = model.predict(input_data)[0]
+predicted_class = model.predict(input_df)[0]
 
-# Afficher le résultat
-print(f"Type de navire prédit : {predicted_class}")
+predicted_class = int(predicted_class)
+
+
+result = {
+    "type": predicted_class
+}
+
+# Imprimer le JSON (une seule ligne) — côté PHP, json_decode($output, true) renverra un tableau associatif
+print(json.dumps(result))

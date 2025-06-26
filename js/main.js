@@ -1,30 +1,3 @@
-function getTabSearch(){
-    var id = getCookie("nautica-cookie");
-    ajaxRequest('GET','/php/request.php/tabSearch?id_user='+id, function(responses){
-
-        if(!responses.error){
-
-          let content = document.getElementById("tabSearch");
-          content.innerHTML=""
-          // console.log(responses);
-          for(let response of responses){
-            // console.log(response);
-            content.innerHTML+=`<tr> 
-                  <td>`+response.duration+`</td>
-                  <td>`+response.depth+`</td>
-                  <td>
-                  <button type="button" class="btn btn-light" onclick="displayAddDive(`+response.id_dive+`)" data-bs-toggle="modal" data-bs-target="#exampleModal"> Ajouter a mes plongées</button>
-                </td>
-                <td><span class="close" onclick="deleteDive(` + response.id_dive + `)">&times;</span></td>
-            </tr>`;
-          };
-        }
-        else{
-            let content = document.getElementById("tabSearch");
-            content.innerHTML=""
-        }
-    });
-}
 
 
 function test(){
@@ -215,8 +188,15 @@ function getInfoByName(name){
         const response = raw[0];
         if (!response.error) {
             const infoDiv = document.getElementById('vesselNameDisplay');
+            window.currentMmsi = response.mmsi;
             infoDiv.innerHTML = `
-                <p><strong>MMSI:</strong> ${response.mmsi} <strong>IMO:</strong> ${response.imo} <strong>Type:</strong> ${response.type} <strong>Longueur:</strong> ${response.length} m <strong>Tirant d'eau:</strong> ${response.draft} m</p>
+                <p>
+                    <strong>MMSI:</strong> <span id="mmsiValue">${response.mmsi}</span>
+                    <strong>IMO:</strong> ${response.imo}
+                    <strong>Type:</strong> ${response.type}
+                    <strong>Longueur:</strong> ${response.length} m
+                    <strong>Tirant d'eau:</strong> ${response.draft} m
+                </p>
             `;
         } else {
             console.error('Erreur lors de la récupération des infos du bateau:', response);
@@ -343,7 +323,7 @@ function renderTable(rows) {
     this.reset();
 }
 
- function getSelectedMMSI() {
+ function getSelectedId() {
     const radios = document.getElementsByName('selectMMSI');
     for (let radio of radios) {
       if (radio.checked) {
@@ -355,15 +335,35 @@ function renderTable(rows) {
   }
 
   function predictType() {
-    const mmsi = getSelectedMMSI();
-    if (mmsi) {
-      console.log("Prédiction du type pour le MMSI :", mmsi);
-    }
+      const mmsi = window.currentMmsi;
+      if (!mmsi) {
+          alert("Veuillez sélectionner un bateau pour récupérer son MMSI.");
+          return;
+      }
+      ajaxRequest('GET', '/php/request.php/predictType?mmsi=' + mmsi, function(response) {
+          if (!response.error) {
+              const prediction = document.getElementById('pred');
+              prediction.innerHTML = `response: ${JSON.stringify(response)}`;
+          } else {
+              console.error('Erreur lors de la prédiction de type:', response);
+          }
+      });
+      console.log("Prédiction de type pour le MMSI:", mmsi);
   }
 
   function predictTrajectoire() {
-    const mmsi = getSelectedMMSI();
-    if (mmsi) {
-      console.log("Prédiction de la trajectoire pour le MMSI :", mmsi);
+    const id_pos= getSelectedId();
+
+    ajaxRequest('GET', '/php/request.php/predictTrajectory?id_position=' + id_pos, function(response) {
+      if (!response.error) {
+        const prediction = document.getElementById('pred');
+        prediction.innerHTML = `response: ${JSON.stringify(response)}`;
+      } else {
+        console.error('Erreur lors de la prédiction de la trajectoire:', response);
+      }
+    });
+
+    if (id_pos) {
+      console.log("Prédiction de la trajectoire pour le MMSI :", id_pos);
     }
   }
