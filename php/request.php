@@ -23,10 +23,17 @@ $router->GET('/test', [], function(){
   test($pdo);
 
 });
-
+/*
 $router->POST('/boat', ["id ","mmsi ","base_date_time ","lat ","lon ","sog ","cog ","heading ","vessel_name ","imo ","call_sign ","vessel_type ","status ","length ","width ","draft ","cargo ","transceiver_class"], function($mmsi, $password){
   global $pdo;
   postBoat($pdo,$id, $mmsi, $base_date_time, $lat, $lon, $sog, $cog, $heading, $vessel_name, $imo, $call_sign, $vessel_type, $status, $length, $width, $draft, $cargo, $transceiver_class);
+});*/
+
+
+
+$router->POST('/boat', ["mmsi","timestamp","lat","lon","sog","cog","heading","name","status","length","width","draft"], function($mmsi, $timestamp, $lat, $lon, $sog, $cog, $heading, $name, $status, $length, $width, $draft){
+  global $pdo;
+  postBoat($pdo,$mmsi, $timestamp, $lat, $lon, $sog, $cog, $heading, $name, $status, $length, $width, $draft);
 });
 
 $router->GET('/boatMmsi',["mmsi"], function($mmsi){
@@ -83,7 +90,7 @@ $router->POST('/chat', [], function() {
 
 $router->GET('/vesselname', [], function() {
   global $pdo;
-  GetTabVessselsName($pdo);
+  GetTabVesselsName($pdo);
 });
 
 $router->GET('/vesselInfo', ["name"], function($name) {
@@ -98,5 +105,3 @@ $router->GET('/positionTab', ["name"], function($name) {
 
 
 $router->run();
-
-?>

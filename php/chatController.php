@@ -16,7 +16,7 @@ use OpenAI;
 function handleChat(PDO $pdo, string $prompt) {
 
     // Définition de la clé API OpenAI (à sécuriser dans une variable d'environnement en production)
-   $openai = OpenAI::client('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');
+   
 
     
 

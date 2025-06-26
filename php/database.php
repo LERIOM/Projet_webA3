@@ -46,7 +46,7 @@ function test($db){
       return Response::HTTP200(['resp_capacity' => 20]);
   }
 }
-
+/*
 function postBoat($pdo,$id, $mmsi, $base_date_time, $lat, $lon, $sog, $cog, $heading, $vessel_name, $imo, $call_sign, $vessel_type, $status, $length, $width, $draft, $cargo, $transceiver_class){
   // 1) Insertion ou mise à jour du bateau
   $boatStmt = $pdo->prepare(
@@ -104,6 +104,8 @@ function postBoat($pdo,$id, $mmsi, $base_date_time, $lat, $lon, $sog, $cog, $hea
 
   return Response::HTTP201();
 }
+
+*/
 
 
 function getTabMmsi($pdo, $mmsi) {
@@ -222,7 +224,7 @@ function getPredictTrajectory(
   }
 }
 
- function GetTabVessselsName($pdo){
+ function GetTabVesselsName($pdo){
     $query = $pdo->prepare(
         'SELECT DISTINCT vessel_name FROM boat ORDER BY vessel_name'
     );
@@ -261,6 +263,7 @@ function getPredictTrajectory(
         return Response::HTTP404(['message' => 'No vessel found with the given name']);
     }
  }
+ //56765
 
 function getPositionTab($pdo, $name) {
     $query = $pdo->prepare(
@@ -289,5 +292,81 @@ function getPositionTab($pdo, $name) {
         return Response::HTTP200($result);
     } else {
         return Response::HTTP404(['message' => 'No position data found']);
+    }
+}
+
+
+function postBoat($pdo,$mmsi, $timestamp, $lat, $lon, $sog, $cog, $heading, $name, $status, $length, $width, $draft) {
+    try {
+        $pdo->beginTransaction();
+
+        // 1) Upsert dans boat (vérifie si le bateau existe déjà)
+        $sqlBoat = <<<SQL
+INSERT INTO boat (mmsi, vessel_name, length, width, draft)
+VALUES (:mmsi, :vessel_name, :length, :width, :draft)
+ON CONFLICT (mmsi) DO UPDATE
+  SET vessel_name = EXCLUDED.vessel_name,
+      length      = EXCLUDED.length,
+      width       = EXCLUDED.width,
+      draft       = EXCLUDED.draft
+SQL;
+        $stmtBoat = $pdo->prepare($sqlBoat);
+        $stmtBoat->execute([
+            ':mmsi'        => $mmsi,
+            ':vessel_name' => $name,
+            ':length'      => $length,
+            ':width'       => $width,
+            ':draft'       => $draft,
+        ]);
+
+        // 2) Insère le code de navigation s’il n’existe pas
+        $sqlStatus = <<<SQL
+INSERT INTO navigation_status (id_status)
+VALUES (:status)
+ON CONFLICT (id_status) DO NOTHING
+SQL;
+        $stmtStatus = $pdo->prepare($sqlStatus);
+        $stmtStatus->execute([':status' => $status]);
+
+        // 3) Insert du point dans position
+        $sqlPos = <<<SQL
+INSERT INTO position
+  (base_date_time, lat, lon, sog, cog, heading, id_status, mmsi)
+VALUES
+  (:timestamp, :lat, :lon, :sog, :cog, :heading, :status, :mmsi)
+SQL;
+        $stmtPos = $pdo->prepare($sqlPos);
+        $stmtPos->execute([
+            ':timestamp' => $timestamp,
+            ':lat'       => $lat,
+            ':lon'       => $lon,
+            ':sog'       => $sog,
+            ':cog'       => $cog,
+            ':heading'   => $heading,
+            ':status'    => $status,
+            ':mmsi'      => $mmsi,
+        ]);
+
+        $pdo->commit();
+        return Response::HTTP200(['message'=>'Point de donnée ajouté avec succès']);
+    } catch (Exception $e) {
+        $pdo->rollBack();
+        return Response::HTTP404(['message'=>'Erreur : '.$e->getMessage()]);
+    }
+}
+
+
+function getVesselNotype(PDO $pdo) {
+    $stmt = $pdo->prepare("SELECT *
+      FROM boat
+      WHERE vessel_type IS NULL
+      OR vessel_type = ''");
+    $stmt->execute();
+    $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    if (!empty($result)) {
+        return Response::HTTP200($result);
+    } else {
+        return Response::HTTP404(['message' => 'Aucun bateau sans type trouvé']);
     }
 }

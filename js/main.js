@@ -250,10 +250,7 @@ function getTabByName(name) {
     });
 }
 
-/**
- * Génère et affiche un tableau pour un array d'objets.
- * @param {Array<Object>} rows
- */
+
 function renderTable(rows) {
     const messagesEl = document.getElementById('messages');
     // Crée la table et ses éléments
@@ -299,3 +296,75 @@ function renderTable(rows) {
     messagesEl.appendChild(wrapper);
     messagesEl.scrollTop = messagesEl.scrollHeight;
 }
+
+ function putNewBoat(event) {
+    event.preventDefault();
+
+
+    const formData = new FormData(this);
+    const mmsi = formData.get('mmsi');
+    const timestamp = formData.get('timestamp');
+    const lat     = parseFloat(formData.get('lat'));
+    const lon     = parseFloat(formData.get('lon'));
+    const sog     = parseFloat(formData.get('sog'));
+    const cog     = parseFloat(formData.get('cog'));
+    const heading = parseFloat(formData.get('heading'));
+    const name = formData.get('vessel_name');
+    const status = formData.get('status');
+    const length  = parseFloat(formData.get('length'));
+    const width   = parseFloat(formData.get('width'));
+    const draft   = parseFloat(formData.get('draft'));
+
+    console.log('Données du bateau à ajouter :', {
+        mmsi,
+        timestamp,
+        lat,
+        lon,
+        sog,
+        cog,
+        heading,
+        name,
+        status,
+        length,
+        width,
+        draft
+    });
+    let data = "mmsi=" + mmsi + "&timestamp=" + timestamp + "&lat=" + lat + "&lon=" + lon + "&sog=" + sog + "&cog=" + cog + "&heading=" + heading + "&name=" + name + "&status=" + status + "&length=" + length + "&width=" + width + "&draft=" + draft;
+
+    ajaxRequest('POST', '/php/request.php/boat', function(response) {
+        if (!response.error) {
+            console.log('Bateau ajouté avec succès:', response);
+        } else {
+            console.error('Erreur lors de l\'ajout du bateau:', response);
+        }
+    }, data);
+
+    const ajoutModal = bootstrap.Modal.getInstance(document.getElementById('ajoutPointModal'));
+    ajoutModal.hide();
+    this.reset();
+}
+
+ function getSelectedMMSI() {
+    const radios = document.getElementsByName('selectMMSI');
+    for (let radio of radios) {
+      if (radio.checked) {
+        return radio.value;
+      }
+    }
+    alert("Veuillez sélectionner un bateau.");
+    return null;
+  }
+
+  function predictType() {
+    const mmsi = getSelectedMMSI();
+    if (mmsi) {
+      console.log("Prédiction du type pour le MMSI :", mmsi);
+    }
+  }
+
+  function predictTrajectoire() {
+    const mmsi = getSelectedMMSI();
+    if (mmsi) {
+      console.log("Prédiction de la trajectoire pour le MMSI :", mmsi);
+    }
+  }
