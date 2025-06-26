@@ -23,20 +23,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Layout centré sur le Golfe
     const layout = {
+    margin: { t: 0, b: 0, l: 0, r: 0 },
     geo: {
-        scope: 'north america',
-        projection: { type: 'albers usa' },
-        lonaxis: { range: [-95, -82] },
-        lataxis: { range: [22, 30] },
-        showland: true,
-        landcolor: 'rgb(217, 217, 217)',
-        subunitwidth: 1,
-        countrywidth: 1,
-        subunitcolor: 'rgb(255,255,255)',
-        countrycolor: 'rgb(255,255,255)'
-    },
-    margin: { l:0, r:0, t:0, b:0 }
-    };
+    projection: { type: "mercator" },
+    showland: true,
+    landcolor: "rgb(230,230,230)",
+    showcountries: true,
+    lataxis: { range: [18, 31] },     // Latitudes du Golfe
+    lonaxis: { range: [-105, -74] },   // Longitudes du Golfe
+  }
+};
 
     Plotly.newPlot('plotly-map', [trace], layout);
 
