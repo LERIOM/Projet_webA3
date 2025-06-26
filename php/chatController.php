@@ -17,7 +17,7 @@ function handleChat(PDO $pdo, string $prompt) {
 
     // Définition de la clé API OpenAI (à sécuriser dans une variable d'environnement en production)
    
-    $openai = OpenAI::client('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');
+    
     
 
     // Génération de la description du schéma de la base
