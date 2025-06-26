@@ -1,68 +1,74 @@
-
 // Initialisation de la carte Plotly
 document.addEventListener('DOMContentLoaded', () => {
-    const vesselNames = ["Liberty One", "Ocean Spirit", "Sea Explorer"];
-    const vesselLats = [24.5, 25.2, 26.0];
-    const vesselLons = [-89.5, -88.0, -87.5];
+    // Dynamically load vessel data
+    ajaxRequest('GET', '/php/request.php/getAllVesselsPos', function(response) {
+      if (!response.error) {
+        // Récupère le tableau de navires depuis la réponse et log
+        const vessels = response.data || response;
+        // Stocke les données globalement pour recolorisation par cluster
+        window.vessels = vessels;
+        // Récupère les clusters pour chaque point
+        const vesselClusters = vessels.map(v => parseInt(v.cluster_kmeans, 10));
+        console.log('Données des navires récupérées avec succès:', vessels);
+        // Génère les tableaux pour Plotly à partir de chaque objet
+        const vesselNames = vessels.map(v => v.vessel_name);
+        const vesselLats = vessels.map(v => parseFloat(v.lat));
+        const vesselLons = vessels.map(v => parseFloat(v.lon));
 
-    // Trace des bateaux
-    const trace = {
-    type: 'scattergeo',
-    locationmode: 'USA-states',
-    lon: vesselLons,
-    lat: vesselLats,
-    text: vesselNames.map((n,i) => `${n}`),
-    mode: 'markers',
-    marker: {
-        size: 14,
-        symbol: 'circle',
-        color: 'blue'
-    },
-    hoverinfo: 'text'
-    };
+        const trace = {
+          type: 'scattergeo',
+          locationmode: 'USA-states',
+          lon: vesselLons,
+          lat: vesselLats,
+          text: vesselNames,
+          mode: 'markers',
+          marker: {
+            size: 5,
+            symbol: 'circle',
+            color: 'blue'
+          },
+          hoverinfo: 'text'
+        };
 
-    // Layout centré sur le Golfe
-    const layout = {
-    margin: { t: 0, b: 0, l: 0, r: 0 },
-    geo: {
-    projection: { type: "mercator" },
-    showland: true,
-    landcolor: "rgb(230,230,230)",
-    showcountries: true,
-    lataxis: { range: [18, 31] },     // Latitudes du Golfe
-    lonaxis: { range: [-105, -74] },   // Longitudes du Golfe
-  }
-};
+        const layout = {
+          margin: { t: 0, b: 0, l: 0, r: 0 },
+          geo: {
+            projection: { type: 'mercator' },
+            showland: true,
+            landcolor: 'rgb(230,230,230)',
+            showcountries: true,
+            lataxis: { range: [18, 31] },
+            lonaxis: { range: [-105, -74] }
+          }
+        };
 
-    Plotly.newPlot('plotly-map', [trace], layout);
+        Plotly.newPlot('plotly-map', [trace], layout);
 
-    // Gestion des clics sur les points
-    const mapDiv = document.getElementById('plotly-map');
-    mapDiv.on('plotly_click', data => {
-    const point = data.points[0];
-    const name = point.text;
-    document.getElementById("vesselNameDisplay").textContent = name;
-    document.getElementById("vesselModalLabel").textContent = `Bateau : ${name}`;
-    new bootstrap.Modal(document.getElementById('vesselModal')).show();
-    });
+        // Fonction pour colorer les points selon leur cluster (0-4)
+        window.applyClusterColors = function() {
+          const clusterColors = ['red', 'green', 'blue', 'orange', 'purple'];
+          // Génère un tableau de couleurs basé sur cluster_kmeans
+          const colors = window.vessels.map(v => {
+            const c = parseInt(v.cluster_kmeans, 10);
+            return clusterColors[c] || 'gray';
+          });
+          // Met à jour la couleur des marqueurs sur la carte
+          Plotly.restyle('plotly-map', 'marker.color', [colors]);
+        };
 
-    // Remplissage du tableau avec liens
-    const tbody = document.getElementById("vessel-tbody");
-    vesselNames.forEach(name => {
-    const tr = document.createElement("tr");
-    const td = document.createElement("td");
-    const link = document.createElement("a");
-    link.href = "#";
-    link.textContent = name;
-    link.className = "text-primary text-decoration-underline";
-    link.setAttribute("data-bs-toggle", "modal");
-    link.setAttribute("data-bs-target", "#vesselModal");
-    link.onclick = () => {
-        document.getElementById("vesselNameDisplay").textContent = name;
-        document.getElementById("vesselModalLabel").textContent = `Bateau : ${name}`;
-    };
-    td.appendChild(link);
-    tr.appendChild(td);
-    tbody.appendChild(tr);
+        // Attach click handler after plotting
+        const mapDiv = document.getElementById('plotly-map');
+        mapDiv.on('plotly_click', data => {
+          const point = data.points[0];
+          const name = point.text;
+          getInfoByName(name);
+          document.getElementById("vesselNameDisplay").textContent = name;
+          document.getElementById("vesselModalLabel").textContent = `Bateau : ${name}`;
+          new bootstrap.Modal(document.getElementById('vesselModal')).show();
+        });
+
+      } else {
+        console.error('Erreur lors de la récupération dynamique des navires:', response);
+      }
     });
 });

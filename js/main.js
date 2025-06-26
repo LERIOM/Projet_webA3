@@ -243,6 +243,7 @@ function getTabByName(name) {
     });
 }
 
+
 function renderTable(rows) {
     const messagesEl = document.getElementById('messages');
     // Crée la table et ses éléments
