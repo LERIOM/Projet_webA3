@@ -47,7 +47,52 @@
 
     <!-- Bouton prédiction -->
     <div class="d-flex justify-content-center mt-3">
-      <button class="btn btn-primary">Prédire les clusters</button>
+      <button class="btn btn-primary" onclick="predictClusters()">Prédire les clusters</button>
+      <script>
+      function predictClusters() {
+        fetch('../clustering_web')
+        .then(response => response.json())
+        .then(data => {
+          if (data.error) {
+            alert("Erreur : " + data.error);
+            return;
+          }
+
+      // Exemple de visualisation Plotly simple :
+      const lat = data.map(d => d.lat_mean);
+      const lon = data.map(d => d.lon_mean);
+      const cluster = data.map(d => d.predicted_cluster);
+      const names = data.map(d => d.vessel_name || "Inconnu");
+
+      const trace = {
+        type: 'scattergeo',
+        mode: 'markers',
+        lat: lat,
+        lon: lon,
+        text: names.map((name, i) => `${name}<br>Cluster ${cluster[i]}`),
+        marker: {
+          size: 8,
+          color: cluster,
+          colorscale: 'Viridis',
+          colorbar: { title: 'Cluster' }
+        }
+      };
+
+      Plotly.newPlot('plotly-map', [trace], {
+        geo: {
+          scope: 'world',
+          projection: { type: 'natural earth' }
+        },
+        title: 'Résultat de la clusterisation'
+      });
+
+    })
+    .catch(error => {
+      console.error("Erreur:", error);
+      alert("Erreur lors de la prédiction.");
+    });
+}
+</script>
     </div>
 
     <!-- Liste des bateaux -->
