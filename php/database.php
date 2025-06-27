@@ -171,7 +171,7 @@ function getredictCluster($pdo, $cog, $sog, $lat, $lon) {
 
     $output = shell_exec($cmd);
 
-    // On suppose que le script renvoie du JSON
+    // le script renvoie du JSON
     $data = json_decode($output, true);
 
     if ($data !== null) {
@@ -270,8 +270,6 @@ function getPredictType(PDO $pdo, $mmsi) {
     );
     $output = shell_exec($cmd);
 
-    echo $output; // Pour le débogage, à retirer en production
-
      // 3) Décoder le JSON renvoyé par le script
     $decoded = json_decode($output, true);
     if (isset($decoded['type'])) {
@@ -280,6 +278,51 @@ function getPredictType(PDO $pdo, $mmsi) {
         return Response::HTTP404(['message' => 'prediction error']);
     }
 }
+
+function getPredictCluster(PDO $pdo, $lat,$lon,$sog,$cog,$heading) {
+    // 1) Récupérer les dernières données de position et caractéristiques du bateau
+    $query = $pdo->prepare(
+        'SELECT p.lat, p.lon, p.sog, p.cog, p.heading, b.length, b.draft
+         FROM position AS p
+         JOIN boat AS b ON p.mmsi = b.mmsi
+         WHERE p.mmsi = :mmsi
+         ORDER BY p.id_position DESC
+         LIMIT 1'
+    );
+    $query->bindParam(':mmsi', $mmsi);
+    $query->execute();
+    $position = $query->fetch(PDO::FETCH_ASSOC);
+
+    if (!$position) {
+        return Response::HTTP404(['message' => 'Position not found']);
+    }
+
+    // 2) Construire et exécuter la commande Python
+    $cmd = sprintf(
+        'python3 /var/www/html/Projet_webA3/python/cluster.py ' .
+        '--LAT %s --LON %s --SOG %s --COG %s --Heading %s 2>&1',
+        escapeshellarg($lat),
+        escapeshellarg($lon),
+        escapeshellarg($sog),
+        escapeshellarg($cog),
+        escapeshellarg($heading),
+    );
+    $output = shell_exec($cmd);
+
+    // 3) Décoder le JSON renvoyé par le script
+    $result = json_decode($output, true);
+    if ($result !== null) {
+        return $result;
+    }
+
+    // En cas d'erreur ou JSON invalide
+    return Response::HTTP500([
+        'message' => 'Erreur lors de l\'exécution du script cluster.py ou JSON malformé',
+        'output'  => $output
+    ]);
+}
+
+
 
  function GetTabVesselsName($pdo){
     $query = $pdo->prepare(
@@ -322,7 +365,6 @@ function getPredictType(PDO $pdo, $mmsi) {
         return Response::HTTP404(['message' => 'No vessel found with the given name']);
     }
  }
- //56765
 
 function getPositionTab($pdo, $name) {
     $query = $pdo->prepare(
@@ -360,7 +402,7 @@ function postBoat($pdo,$mmsi, $timestamp, $lat, $lon, $sog, $cog, $heading, $nam
     try {
         $pdo->beginTransaction();
 
-        // 1) Upsert dans boat (vérifie si le bateau existe déjà)
+        // 1) Upsert dans boat (vérifie si le bateau existe déjà) et calcul du cluster_kmeans
         $sqlBoat = <<<SQL
 INSERT INTO boat (mmsi, vessel_name, length, width, draft)
 VALUES (:mmsi, :vessel_name, :length, :width, :draft)
@@ -407,6 +449,25 @@ SQL;
             ':mmsi'      => $mmsi,
         ]);
 
+        // 4) Calcul du cluster_kmeans via getPredictCluster
+        // Ici on choisit un delta par défaut de 600 secondes (10 minutes)
+        $clusterResp = getPredictCluster($pdo, $lat,$lon,$sog,$cog,$heading) ;
+        $cluster = null;
+        if (is_array($clusterResp) && isset($clusterResp[0]['cluster'])) {
+            $cluster = $clusterResp[0]['cluster'];
+        }
+
+        // 5) Mettre à jour le champ cluster_kmeans dans la table boat
+        if ($cluster !== null) {
+            $updateCluster = $pdo->prepare(
+                'UPDATE boat SET cluster_kmeans = :cluster WHERE mmsi = :mmsi'
+            );
+            $updateCluster->execute([
+                ':cluster' => $cluster,
+                ':mmsi'    => $mmsi,
+            ]);
+        }
+
         $pdo->commit();
         return Response::HTTP200(['message'=>'Point de donnée ajouté avec succès']);
     } catch (Exception $e) {
@@ -415,7 +476,7 @@ SQL;
     }
 }
 
-
+/*
 function getVesselNotype(PDO $pdo) {
     $stmt = $pdo->prepare("SELECT *
       FROM boat
@@ -428,5 +489,108 @@ function getVesselNotype(PDO $pdo) {
         return Response::HTTP200($result);
     } else {
         return Response::HTTP404(['message' => 'Aucun bateau sans type trouvé']);
+    }
+}*/
+
+function getAllVesselsPos(PDO $pdo) {
+    $query = $pdo->prepare(
+        'SELECT b.vessel_name, p.lat, p.lon, b.cluster_kmeans
+         FROM (
+           SELECT * FROM boat
+           ORDER BY vessel_name ASC
+           LIMIT 150
+         ) AS b
+         JOIN LATERAL (
+           SELECT lat, lon
+           FROM position AS p2
+           WHERE p2.mmsi = b.mmsi
+           ORDER BY p2.base_date_time DESC
+           LIMIT 1000
+         ) AS p ON true'
+    );
+    $query->execute();
+    $result = $query->fetchAll(PDO::FETCH_ASSOC);
+    
+    if (!empty($result)) {
+        return Response::HTTP200($result);
+    } else {
+        return Response::HTTP404(['message' => 'No vessels found']);
+    }
+}
+
+function isTypeUndifined($pdo,$mmsi){
+    $query = $pdo->prepare(
+        'SELECT vessel_type FROM boat WHERE mmsi = :mmsi'
+    );
+    $query->bindParam(':mmsi', $mmsi);
+    $query->execute();
+    $result = $query->fetch(PDO::FETCH_ASSOC);
+
+   if (!empty($result)) {
+        return Response::HTTP200($result);
+    } else {
+        return Response::HTTP404(['message' => 'No vessels found']);
+    }
+}
+
+
+function addTypeToBoat($pdo, $mmsi, $type){
+    $query = $pdo->prepare(
+        'SELECT vessel_type FROM boat WHERE mmsi = :mmsi'
+    );
+    $query->bindParam(':mmsi', $mmsi);
+    $query->execute();
+    $result = $query->fetch(PDO::FETCH_ASSOC);
+
+    if ($result && !empty($result['vessel_type'])) {
+        return Response::HTTP404(['message' => 'Type already defined for this boat']);
+    }
+
+    // 2) Mettre à jour le type du bateau
+    $updateQuery = $pdo->prepare(
+        'UPDATE boat SET vessel_type = :type WHERE mmsi = :mmsi'
+    );
+    $updateQuery->bindParam(':type', $type);
+    $updateQuery->bindParam(':mmsi', $mmsi);
+    
+    if ($updateQuery->execute()) {
+        return Response::HTTP200(['message' => 'Type added successfully']);
+    } else {
+        return Response::HTTP404(['message' => 'Failed to add type']);
+    }
+}
+
+function addPosition($pdo, $mmsi, $timestamp, $lat, $lon, $sog, $cog, $heading, $status) {
+    try {
+        $pdo->beginTransaction();
+
+        // Ensure navigation status exists
+        $stmtStatus = $pdo->prepare(
+            'INSERT INTO navigation_status (id_status) VALUES (:status)
+             ON CONFLICT (id_status) DO NOTHING'
+        );
+        $stmtStatus->execute([':status' => $status]);
+
+        // Insert new position record
+        $stmt = $pdo->prepare(
+            'INSERT INTO position (base_date_time, lat, lon, sog, cog, heading, id_status, mmsi)
+             VALUES (:timestamp, :lat, :lon, :sog, :cog, :heading, :status, :mmsi)'
+        );
+        $stmt->execute([
+            ':timestamp' => $timestamp,
+            ':lat'       => $lat,
+            ':lon'       => $lon,
+            ':sog'       => $sog,
+            ':cog'       => $cog,
+            ':heading'   => $heading,
+            ':status'    => $status,
+            ':mmsi'      => $mmsi,
+        ]);
+
+        $pdo->commit();
+        return Response::HTTP200(['message' => 'Point de donnée ajouté avec succès']);
+    } catch (Exception $e) {
+        $pdo->rollBack();
+        return Response::HTTP404(['message' => 'Erreur lors de l\'ajout du point : ' . $e->getMessage()]);
     }
 }
