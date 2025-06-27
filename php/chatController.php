@@ -17,9 +17,7 @@ function handleChat(PDO $pdo, string $prompt) {
 
     // Définition de la clé API OpenAI (à sécuriser dans une variable d'environnement en production)
    
-    
-    
-
+   
     // Génération de la description du schéma de la base
     $tables = $pdo
         ->query("SELECT table_name FROM information_schema.tables WHERE table_schema='public'")

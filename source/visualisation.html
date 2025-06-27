@@ -83,6 +83,7 @@
                 <th scope="col">Lat</th>
                 <th scope="col">Lon</th>
                 <th scope="col">Heading</th>
+                <th scope="col"></th>
               </tr>
             </thead>
             <tbody id="vesselModalTbody">
@@ -91,8 +92,62 @@
           </div>
         </div>
         <div class="modal-footer">
-          <button class="btn btn-success">Ajouter le bateau</button>
+          <button class="btn btn-success" onclick="    const vesselEl = document.getElementById('vesselModal');
+    const vesselModal = bootstrap.Modal.getInstance(vesselEl) 
+                         || bootstrap.Modal.getOrCreateInstance(vesselEl);
+    vesselModal.hide();
+    const ajoutEl = document.getElementById('ajoutPointModal');
+    const ajoutModal = new bootstrap.Modal(ajoutEl);
+    ajoutModal.show();">Ajouter un point</button>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="ajoutPointModal" tabindex="-1" aria-labelledby="ajoutPointLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <form id="ajoutPointForm">
+          <div class="modal-header">
+            <h5 class="modal-title" id="ajoutPointLabel">Ajouter un point de donnée</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+          </div>
+          <div class="modal-body row g-3">
+            <div class="col-md-4">
+              <label class="form-label">Horodatage</label>
+              <input type="datetime-local" class="form-control" name="timestamp" required>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Latitude</label>
+              <input type="text" class="form-control" name="lat" required>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Longitude</label>
+              <input type="text" class="form-control" name="lon" required>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Vitesse (SOG)</label>
+              <input type="text" class="form-control" name="sog" required>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Cap (COG)</label>
+              <input type="text" class="form-control" name="cog" required>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Cap réel (Heading)</label>
+              <input type="text" class="form-control" name="heading" required>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">État</label>
+              <input type="text" class="form-control" name="status" required>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <a id="errorAdd">Le point n'a pas pu etre ajouté</a>
+            <button class="btn btn-success"  type="button" onclick="addPosition();" >Ajouter</button>
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+          </div>
+        </form>
       </div>
     </div>
   </div>
