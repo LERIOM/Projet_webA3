@@ -187,13 +187,27 @@ function getInfoByName(name){
     ajaxRequest('GET', '/php/request.php/vesselInfo?name=' + encodeURIComponent(name), function(raw) {
         const response = raw[0];
         if (!response.error) {
+            switch (Math.trunc(response.vessel_type / 10)) {
+              case 7:
+                  textType = "Cargo";
+                  break;
+              case 8:
+                  textType = "Tanker";
+                  break;
+              case 6:
+                  textType = "Passenger";
+                  break;
+              default:
+              textType = "Autre";
+            }
             const infoDiv = document.getElementById('vesselNameDisplay');
             window.currentMmsi = response.mmsi;
+            window.currentName = name;
             infoDiv.innerHTML = `
                 <p>
                     <strong>MMSI:</strong> <span id="mmsiValue">${response.mmsi}</span>
                     <strong>IMO:</strong> ${response.imo}
-                    <strong>Type:</strong> ${response.type}
+                    <strong>Type:</strong> ${textType}
                     <strong>Longueur:</strong> ${response.length} m
                     <strong>Tirant d'eau:</strong> ${response.draft} m
                 </p>
@@ -228,7 +242,6 @@ function getTabByName(name) {
         }
     });
 }
-
 
 function renderTable(rows) {
     const messagesEl = document.getElementById('messages');
@@ -276,25 +289,200 @@ function renderTable(rows) {
     messagesEl.scrollTop = messagesEl.scrollHeight;
 }
 
- function putNewBoat(event) {
-    event.preventDefault();
+function putNewBoat(event) {
+  event.preventDefault();
 
 
-    const formData = new FormData(this);
-    const mmsi = formData.get('mmsi');
+  const formData = new FormData(this);
+  const mmsi = formData.get('mmsi');
+  const timestamp = formData.get('timestamp');
+  const lat     = parseFloat(formData.get('lat'));
+  const lon     = parseFloat(formData.get('lon'));
+  const sog     = parseFloat(formData.get('sog'));
+  const cog     = parseFloat(formData.get('cog'));
+  const heading = parseFloat(formData.get('heading'));
+  const name = formData.get('vessel_name');
+  const status = formData.get('status');
+  const length  = parseFloat(formData.get('length'));
+  const width   = parseFloat(formData.get('width'));
+  const draft   = parseFloat(formData.get('draft'));
+
+  console.log('Données du bateau à ajouter :', {
+      mmsi,
+      timestamp,
+      lat,
+      lon,
+      sog,
+      cog,
+      heading,
+      name,
+      status,
+      length,
+      width,
+      draft
+  });
+  let data = "mmsi=" + mmsi + "&timestamp=" + timestamp + "&lat=" + lat + "&lon=" + lon + "&sog=" + sog + "&cog=" + cog + "&heading=" + heading + "&name=" + name + "&status=" + status + "&length=" + length + "&width=" + width + "&draft=" + draft;
+
+  ajaxRequest('POST', '/php/request.php/boat', function(response) {
+      if (!response.error) {
+          console.log('Bateau ajouté avec succès:', response);
+      } else {
+          console.error('Erreur lors de l\'ajout du bateau:', response);
+      }
+  }, data);
+
+  const ajoutModal = bootstrap.Modal.getInstance(document.getElementById('ajoutPointModal'));
+  ajoutModal.hide();
+  this.reset();
+}
+
+function getSelectedId() {
+  const radios = document.getElementsByName('selectMMSI');
+  for (let radio of radios) {
+    if (radio.checked) {
+      return radio.value;
+    }
+  }
+  alert("Veuillez sélectionner une position.");
+  return null;
+}
+
+function predictType() {
+    const mmsi = window.currentMmsi;
+    if (!mmsi) {
+        alert("Veuillez sélectionner un bateau pour récupérer son MMSI.");
+        return;
+    }
+    ajaxRequest('GET', '/php/request.php/predictType?mmsi=' + mmsi, function(response) {
+        if (!response.error) {
+            type = response.predicted_type;
+            console.log("Type prédit:", Math.trunc(type / 10));
+            switch (Math.trunc(type / 10)) {
+            case 7:
+                textType = "Cargo";
+                break;
+            case 8:
+                textType = "Tanker";
+                break;
+            case 6:
+                textType = "Passenger";
+                break;
+            default:
+            textType = "Autre";
+            }
+                
+
+            const prediction = document.getElementById('predType');
+            prediction.dataset.typeNumber = type;
+            prediction.innerHTML = `response: ${textType}`;
+        } else {
+            console.error('Erreur lors de la prédiction de type:', response);
+        }
+    });
+    console.log("Prédiction de type pour le MMSI:", mmsi);
+}
+
+function predictTrajectoire() {
+  const id_pos= getSelectedId();
+
+  ajaxRequest('GET', '/php/request.php/predictTrajectory?id_position=' + id_pos, function(responses) {
+    if (!responses.error) {
+      const response = responses[0]; // On suppose que la réponse est un tableau avec un seul objet
+      const prediction = document.getElementById('predPos');
+      console.log('Prochaine position:', response);
+      console.log('Latitude :', response.lat, 'Longitude :', response.lon);
+      prediction.innerHTML = `Prochaine longitude: ${response.lon}  et latitude: ${response.lat}`;
+    } else {
+      console.error('Erreur lors de la prédiction de la trajectoire:', response);
+    }
+  });
+
+  if (id_pos) {
+    console.log("Prédiction de la trajectoire pour le MMSI :", id_pos);
+  }
+}
+
+
+function clearModal(){
+  window.currentMmsi = "";
+  window.currentName = "";
+  const predictionTy = document.getElementById('predType');
+  const predictionPo = document.getElementById('predPos');
+  predictionTy.innerHTML = ``;
+  predictionPo.innerHTML = ``;
+}
+
+
+function isTypeUndifined() {
+    const mmsi = window.currentMmsi;
+    if (!mmsi) {
+        alert("Veuillez sélectionner un bateau pour récupérer son MMSI.");
+        return;
+    }
+    ajaxRequest('GET', '/php/request.php/isTypeUndifined?mmsi=' + mmsi, function(response) {
+        if (!response.error) {
+            console.log('Type prédiction:', response);
+            if (response.vessel_type== null) {
+               addTypeToBoat();
+            } else {
+                alert("Le type du bateau est déjà défini.");
+            }
+        } else {
+            console.error('Erreur lors de la récupération du type prédiction:', response);
+            alert("Erreur lors de la récupération du type prédiction.");
+        }
+    });
+}
+
+
+function addTypeToBoat(){
+    const mmsi = window.currentMmsi;
+    const name = window.currentName;
+    console.log("Nom du bateau:", name);
+    if (!mmsi) {
+        alert("Veuillez sélectionner un bateau pour récupérer son MMSI.");
+        return;
+    }
+    const elt = document.getElementById('predType');
+    const storedTypeNum = elt.dataset.typeNumber;
+    const typeNum = Number(storedTypeNum);
+    console.log("Type prédit:", typeNum);
+    if (!type) {
+        alert("Veuillez prédire le type du bateau avant de l'ajouter.");
+        return;
+    }
+    ajaxRequest('PUT', '/php/request.php/addTypeToBoat', function(response) {
+        if (!response.error) {
+            console.log('Type ajouté avec succès:', response);
+            alert("Type ajouté avec succès !");
+            clearModal();
+            getInfoByName(name);
+        } else {
+            console.error('Erreur lors de l\'ajout du type:', response);
+            alert("Erreur lors de l'ajout du type.");
+        }
+    }, `mmsi=${mmsi}&type=${type}`);
+}
+
+function addPosition() {
+    let mmsi = window.currentMmsi;
+    if (!mmsi) {
+        alert("Veuillez sélectionner un bateau pour récupérer son MMSI.");
+        return;
+    }
+    const form = document.getElementById('ajoutPointForm');
+    const formData = new FormData(form);
     const timestamp = formData.get('timestamp');
-    const lat     = parseFloat(formData.get('lat'));
-    const lon     = parseFloat(formData.get('lon'));
-    const sog     = parseFloat(formData.get('sog'));
-    const cog     = parseFloat(formData.get('cog'));
+    const lat = parseFloat(formData.get('lat'));
+    const lon = parseFloat(formData.get('lon'));
+    const sog = parseFloat(formData.get('sog'));
+    const cog = parseFloat(formData.get('cog'));
     const heading = parseFloat(formData.get('heading'));
-    const name = formData.get('vessel_name');
     const status = formData.get('status');
-    const length  = parseFloat(formData.get('length'));
-    const width   = parseFloat(formData.get('width'));
-    const draft   = parseFloat(formData.get('draft'));
-
-    console.log('Données du bateau à ajouter :', {
+    const length = parseFloat(formData.get('length'));
+    const width = parseFloat(formData.get('width'));
+    const draft = parseFloat(formData.get('draft'));
+    console.log('Données de la position à ajouter :', {
         mmsi,
         timestamp,
         lat,
@@ -302,68 +490,26 @@ function renderTable(rows) {
         sog,
         cog,
         heading,
-        name,
-        status,
-        length,
-        width,
-        draft
+        status
     });
-    let data = "mmsi=" + mmsi + "&timestamp=" + timestamp + "&lat=" + lat + "&lon=" + lon + "&sog=" + sog + "&cog=" + cog + "&heading=" + heading + "&name=" + name + "&status=" + status + "&length=" + length + "&width=" + width + "&draft=" + draft;
 
-    ajaxRequest('POST', '/php/request.php/boat', function(response) {
+    let data = `mmsi=${mmsi}&timestamp=${timestamp}&lat=${lat}&lon=${lon}&sog=${sog}&cog=${cog}&heading=${heading}&status=${status}`;
+    ajaxRequest('PUT', '/php/request.php/position', function(response) {
         if (!response.error) {
-            console.log('Bateau ajouté avec succès:', response);
+            console.log('Position ajoutée avec succès:', response);
+            alert("Position ajoutée avec succès !");
+            const ajoutModal = bootstrap.Modal.getInstance(document.getElementById('ajoutPointModal'));
+            ajoutModal.hide();
+            form.reset();
+            getInfoByName(window.currentName);
         } else {
-            console.error('Erreur lors de l\'ajout du bateau:', response);
+            console.error('Erreur lors de l\'ajout de la position:', response);
+            document.getElementById('errorAdd').style.display = 'block';
         }
     }, data);
-
-    const ajoutModal = bootstrap.Modal.getInstance(document.getElementById('ajoutPointModal'));
-    ajoutModal.hide();
-    this.reset();
-}
-
- function getSelectedId() {
-    const radios = document.getElementsByName('selectMMSI');
-    for (let radio of radios) {
-      if (radio.checked) {
-        return radio.value;
-      }
-    }
-    alert("Veuillez sélectionner un bateau.");
-    return null;
   }
 
-  function predictType() {
-      const mmsi = window.currentMmsi;
-      if (!mmsi) {
-          alert("Veuillez sélectionner un bateau pour récupérer son MMSI.");
-          return;
-      }
-      ajaxRequest('GET', '/php/request.php/predictType?mmsi=' + mmsi, function(response) {
-          if (!response.error) {
-              const prediction = document.getElementById('pred');
-              prediction.innerHTML = `response: ${JSON.stringify(response)}`;
-          } else {
-              console.error('Erreur lors de la prédiction de type:', response);
-          }
-      });
-      console.log("Prédiction de type pour le MMSI:", mmsi);
-  }
 
-  function predictTrajectoire() {
-    const id_pos= getSelectedId();
 
-    ajaxRequest('GET', '/php/request.php/predictTrajectory?id_position=' + id_pos, function(response) {
-      if (!response.error) {
-        const prediction = document.getElementById('pred');
-        prediction.innerHTML = `response: ${JSON.stringify(response)}`;
-      } else {
-        console.error('Erreur lors de la prédiction de la trajectoire:', response);
-      }
-    });
 
-    if (id_pos) {
-      console.log("Prédiction de la trajectoire pour le MMSI :", id_pos);
-    }
-  }
+
