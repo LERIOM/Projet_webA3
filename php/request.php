@@ -86,6 +86,25 @@ $router->GET('/positionTab', ["name"], function($name) {
     getPositionTab($pdo, $name);
 });
 
+$router->GET('/getAllVesselsPos', [], function() {
+    global $pdo;
+    getAllVesselsPos($pdo);
+});
+
+$router->GET('/isTypeUndifined', ["mmsi"], function($mmsi) {
+    global $pdo;
+    isTypeUndifined($pdo,$mmsi);
+});
+
+$router->PUT ('/addTypeToBoat', ["mmsi", "type"], function($mmsi, $type) {
+    global $pdo;
+    addTypeToBoat($pdo, $mmsi, $type);
+});
+
+$router->PUT ('/position', ["mmsi", "timestamp", "lat", "lon", "sog", "cog", "heading","status"], function($mmsi, $timestamp, $lat, $lon, $sog, $cog, $heading,$status) {
+    global $pdo;
+    addPosition($pdo, $mmsi, $timestamp, $lat, $lon, $sog, $cog, $heading,$status);
+});
 
 $router->run();
 
