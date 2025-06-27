@@ -20,15 +20,10 @@
       </button>
       <div class="collapse navbar-collapse" id="navbarNav">
         <ul class="navbar-nav">
-          <li class="nav-item">
-            <a class="nav-link text-white" href="bootstrap.html">Accueil</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link text-white" href="prediction.html">Prediction</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link text-white" href="visualisation.html">Visualisation</a>
-          </li>
+          <li class="nav-item"><a class="nav-link text-white" href="bootstrap.html">Accueil</a></li>
+          <li class="nav-item"><a class="nav-link text-white" href="prediction.html">Prediction</a></li>
+          <li class="nav-item"><a class="nav-link text-white" href="visualisation.html">Visualisation</a></li>
+          <li class="nav-item"><a class="nav-link text-white" href="chatbot.html">Chatbot</a></li>
         </ul>
       </div>
     </div>
@@ -37,17 +32,12 @@
   <!-- Contenu principal -->
   <div class="container mt-5">
     <h1 class="text-center mb-4">Prédictions</h1>
-
-    <!-- Boutons -->
-    <div class="d-flex justify-content-center gap-3 mb-4">
-      <button class="btn btn-primary" onclick="predictType()">Prédire le type</button>
-      <button class="btn btn-secondary" onclick="predictTrajectoire()">Prédire la trajectoire</button>
-      <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#ajoutPointModal">Ajouter un point</button>
-    </div>
+    <div class="text-center mb-4">
+      <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#ajoutPointModal">Ajouter un point</button>
 
     <!-- Tableau -->
     <div class="container py-4">
-      <h2 class="mb-4 text-center">Liste des Vessels</h2>
+      <h3 class="mb-4 text-center">Liste des Vessels</h3>
       <div class="table-responsive">
         <table class="table table-bordered table-striped table-hover text-center align-middle">
           <tbody id="vessel-tbody"></tbody>
@@ -62,7 +52,7 @@
       <div class="modal-content">
         <div class="modal-header">
           <h5 class="modal-title" id="vesselModalLabel">Nom du bateau</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer" onclick="clearModal()"></button>
         </div>
         <div class="modal-body">
           <p id="vesselNameDisplay" class="fs-5 text-center"></p>
@@ -77,6 +67,7 @@
                 <th scope="col">Lat</th>
                 <th scope="col">Lon</th>
                 <th scope="col">Heading</th>
+                <th scope="col"></th>
               </tr>
             </thead>
             <tbody id="vesselModalTbody">
@@ -85,10 +76,11 @@
           </div>
         </div>
         <div class="modal-footer">
-          <p id="pred" class="fs-5 text-center"></p>
+          <p id="predType" class="fs-5 text-center"></p>
+          <p id="predPos" class="fs-5 text-center"></p>
           <button class="btn btn-primary" onclick="predictType()">Prédire le type</button>
           <button class="btn btn-secondary" onclick="predictTrajectoire()">Prédire la trajectoire</button>
-          <button class="btn btn-success">Ajouter le bateau</button>
+          <button class="btn btn-success" onclick="addTypeToBoat()">Ajouter le type</button>
         </div>
       </div>
     </div>
