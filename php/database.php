@@ -505,7 +505,7 @@ function getAllVesselsPos(PDO $pdo) {
            FROM position AS p2
            WHERE p2.mmsi = b.mmsi
            ORDER BY p2.base_date_time DESC
-           LIMIT 1000
+           LIMIT 500
          ) AS p ON true'
     );
     $query->execute();

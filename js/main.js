@@ -372,7 +372,8 @@ function predictType() {
             textType = "Autre";
             }
                 
-
+            const predPos = document.getElementById('predPos');
+            predPos.innerHTML = '';
             const prediction = document.getElementById('predType');
             prediction.dataset.typeNumber = type;
             prediction.innerHTML = `response: ${textType}`;
@@ -390,6 +391,8 @@ function predictTrajectoire() {
     if (!responses.error) {
       const response = responses[0]; // On suppose que la réponse est un tableau avec un seul objet
       const prediction = document.getElementById('predPos');
+      const predType = document.getElementById('predType');
+      predType.innerHTML = '';
       console.log('Prochaine position:', response);
       console.log('Latitude :', response.lat, 'Longitude :', response.lon);
       prediction.innerHTML = `Prochaine longitude: ${response.lon}  et latitude: ${response.lat}`;
