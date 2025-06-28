@@ -157,34 +157,6 @@ function getAllBoats($pdo) {
   }
 }
 
-function getredictCluster($pdo, $cog, $sog, $lat, $lon) {
-
-    $args = [
-        escapeshellarg($cog),
-        escapeshellarg($sog),
-        escapeshellarg($lat),
-        escapeshellarg($lon)
-    ];
-
-    $cmd = 'python3 /var/www/html/Projet_webA3/python/maintraj.py ' .
-           implode(' ', $args) . ' 2>&1';
-
-    $output = shell_exec($cmd);
-
-    // le script renvoie du JSON
-    $data = json_decode($output, true);
-
-    if ($data !== null) {
-        // Succès : on renvoie les données produites par Python
-        return Response::HTTP200($data);
-    }
-
-    // Échec : JSON invalide ou autre erreur
-    return Response::HTTP500([
-        'message' => 'Erreur lors de l\'exécution du script Python ou JSON malformé',
-        'output'  => $output          // utile pour le débogage
-    ]);
-}
 
 function getPredictTrajectory(
     PDO $pdo,
@@ -279,24 +251,18 @@ function getPredictType(PDO $pdo, $mmsi) {
     }
 }
 
-function getPredictCluster(PDO $pdo, $lat,$lon,$sog,$cog,$heading) {
-    // 1) Récupérer les dernières données de position et caractéristiques du bateau
-    $query = $pdo->prepare(
-        'SELECT p.lat, p.lon, p.sog, p.cog, p.heading, b.length, b.draft
-         FROM position AS p
-         JOIN boat AS b ON p.mmsi = b.mmsi
-         WHERE p.mmsi = :mmsi
-         ORDER BY p.id_position DESC
-         LIMIT 1'
-    );
-    $query->bindParam(':mmsi', $mmsi);
-    $query->execute();
-    $position = $query->fetch(PDO::FETCH_ASSOC);
 
-    if (!$position) {
-        return Response::HTTP404(['message' => 'Position not found']);
+function getPredictCluster(PDO $pdo, $mmsi, $lat, $lon, $sog, $cog, $heading) {
+    // Vérification si le cluster_kmeans existe déjà pour ce bateau
+    $check = $pdo->prepare('SELECT cluster_kmeans FROM boat WHERE mmsi = :mmsi');
+    $check->bindParam(':mmsi', $mmsi);
+    $check->execute();
+    $existing = $check->fetch(PDO::FETCH_ASSOC);
+
+    if ($existing && $existing['cluster_kmeans'] !== null) {
+        return [['cluster' => $existing['cluster_kmeans']]];
     }
-
+ 
     // 2) Construire et exécuter la commande Python
     $cmd = sprintf(
         'python3 /var/www/html/Projet_webA3/python/cluster.py ' .
@@ -404,14 +370,14 @@ function postBoat($pdo,$mmsi, $timestamp, $lat, $lon, $sog, $cog, $heading, $nam
 
         // 1) Upsert dans boat (vérifie si le bateau existe déjà) et calcul du cluster_kmeans
         $sqlBoat = <<<SQL
-INSERT INTO boat (mmsi, vessel_name, length, width, draft)
-VALUES (:mmsi, :vessel_name, :length, :width, :draft)
-ON CONFLICT (mmsi) DO UPDATE
-  SET vessel_name = EXCLUDED.vessel_name,
-      length      = EXCLUDED.length,
-      width       = EXCLUDED.width,
-      draft       = EXCLUDED.draft
-SQL;
+        INSERT INTO boat (mmsi, vessel_name, length, width, draft)
+        VALUES (:mmsi, :vessel_name, :length, :width, :draft)
+        ON CONFLICT (mmsi) DO UPDATE
+        SET vessel_name = EXCLUDED.vessel_name,
+            length      = EXCLUDED.length,
+            width       = EXCLUDED.width,
+            draft       = EXCLUDED.draft
+        SQL;
         $stmtBoat = $pdo->prepare($sqlBoat);
         $stmtBoat->execute([
             ':mmsi'        => $mmsi,
@@ -423,20 +389,20 @@ SQL;
 
         // 2) Insère le code de navigation s’il n’existe pas
         $sqlStatus = <<<SQL
-INSERT INTO navigation_status (id_status)
-VALUES (:status)
-ON CONFLICT (id_status) DO NOTHING
-SQL;
+        INSERT INTO navigation_status (id_status)
+        VALUES (:status)
+        ON CONFLICT (id_status) DO NOTHING
+        SQL;
         $stmtStatus = $pdo->prepare($sqlStatus);
         $stmtStatus->execute([':status' => $status]);
 
         // 3) Insert du point dans position
         $sqlPos = <<<SQL
-INSERT INTO position
-  (base_date_time, lat, lon, sog, cog, heading, id_status, mmsi)
-VALUES
-  (:timestamp, :lat, :lon, :sog, :cog, :heading, :status, :mmsi)
-SQL;
+        INSERT INTO position
+        (base_date_time, lat, lon, sog, cog, heading, id_status, mmsi)
+        VALUES
+        (:timestamp, :lat, :lon, :sog, :cog, :heading, :status, :mmsi)
+        SQL;
         $stmtPos = $pdo->prepare($sqlPos);
         $stmtPos->execute([
             ':timestamp' => $timestamp,
@@ -451,8 +417,10 @@ SQL;
 
         // 4) Calcul du cluster_kmeans via getPredictCluster
         // Ici on choisit un delta par défaut de 600 secondes (10 minutes)
-        $clusterResp = getPredictCluster($pdo, $lat,$lon,$sog,$cog,$heading) ;
+        $clusterResp = getPredictCluster($pdo,$mmsi, $lat,$lon,$sog,$cog,$heading) ;
         $cluster = null;
+        echo "Cluster Response: ";
+        print_r($clusterResp);
         if (is_array($clusterResp) && isset($clusterResp[0]['cluster'])) {
             $cluster = $clusterResp[0]['cluster'];
         }

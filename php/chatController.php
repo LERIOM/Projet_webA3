@@ -5,19 +5,11 @@ session_start();
 require __DIR__ . '/../vendor/autoload.php';
 use OpenAI;
 
-
-/**
- * Gère la requête de chat, appelle l'API OpenAI pour générer du SQL,
- * exécute la requête sur la base de données et renvoie la réponse JSON.
- *
- * @param PDO    $pdo    Instance PDO de la base de données.
- * @param string $prompt Texte saisi par l'utilisateur.
- */
 function handleChat(PDO $pdo, string $prompt) {
 
     // Définition de la clé API OpenAI (à sécuriser dans une variable d'environnement en production)
    
-    $openai = OpenAI::client('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');
+    $openai = OpenAI::client('ajouter ici_votre_clé_API_OpenAI');
     
 
     // Génération de la description du schéma de la base
